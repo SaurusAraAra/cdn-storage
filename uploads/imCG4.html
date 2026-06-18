@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Chat & Image - Gemini 3.1 Pro</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: #121212;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        /* Container utama - keyboard aman bergerak ke atas */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background: #1e1e1e;
+            position: relative;
+        }
+
+        /* Header Chat */
+        .chat-header {
+            padding: 15px;
+            background: #252525;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 1px solid #333;
+            font-size: 1.1rem;
+            color: #00e676;
+        }
+
+        /* Area Pesan */
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Bubble Chat */
+        .message {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 15px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .user-message {
+            background-color: #00e676;
+            color: #000;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        .ai-message {
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+
+        /* Bubble Wrapper Gambar */
+        .ai-image-wrapper {
+            max-width: 80%;
+            align-self: flex-start;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .ai-image-message {
+            background-color: #2d2d2d;
+            border-radius: 15px;
+            border-bottom-left-radius: 2px;
+            padding: 8px;
+            width: 100%;
+        }
+
+        .ai-image-message img {
+            width: 100%;
+            border-radius: 10px;
+            display: block;
+        }
+
+        .system-message {
+            background-color: transparent;
+            color: #888;
+            align-self: center;
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+
+        /* Input Area */
+        .chat-input-area {
+            padding: 12px;
+            background: #252525;
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #444;
+            border-radius: 25px;
+            background: #121212;
+            color: #fff;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        .chat-input-area input:focus {
+            border-color: #00e676;
+        }
+
+        .chat-input-area button {
+            background: #00e676;
+            color: #000;
+            border: none;
+            padding: 0 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .chat-input-area button:hover {
+            background: #00c853;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header">Gemini 3.1 Pro AI & Image</div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message ai-message">Halo Merss! Ada yang bisa Mini bantu hari ini? Kamu bisa ngobrol biasa atau minta aku buat gambar bebas pake Bahasa Indonesia ya!</div>
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" id="userInput" placeholder="Ketik pesan di sini..." autocomplete="off">
+            <button id="sendBtn" onclick="sendMessage()">Kirim</button>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+
+        // Array untuk menyimpan memori riwayat obrolan (Context History)
+        let chatHistory = [
+            { role: "system", text: "Kamu adalah AI asisten bernama Mini. Selalu merespon menggunakan bahasa Indonesia yang santai, gaul, pro, dan baik kepada Merss. Jangan pernah membalas dengan struktur JSON mentah ke pengguna." }
+        ];
+
+        // Fungsi mengekstrak string teks dari objek apa saja
+        function findAiText(obj) {
+            if (typeof obj === 'string') return obj;
+            if (obj === null || obj === undefined) return '';
+            const commonKeys = ['result', 'respon', 'response', 'reply', 'text', 'message', 'data', 'content'];
+            for (let key of commonKeys) {
+                if (obj[key] && typeof obj[key] === 'string') return obj[key];
+                if (obj[key] && typeof obj[key] === 'object') {
+                    let deepSearch = findAiText(obj[key]);
+                    if (deepSearch) return deepSearch;
+                }
+            }
+            return null;
+        }
+
+        // Fungsi Utama Kirim Pesan
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // 1. Tampilkan pesan user ke layar & simpan ke memori
+            appendMessage(text, 'user-message');
+            chatHistory.push({ role: "user", text: text });
+            userInput.value = ''; 
+
+            let typingIndicator = appendMessage('Mini sedang berpikir...', 'system-message');
+            
+            // 2. Menyusun prompt gabungan yang membawa riwayat chat sebelumnya agar nyambung
+            let fullContextPrompt = "";
+            chatHistory.forEach(msg => {
+                if(msg.role === "system") {
+                    fullContextPrompt += `[Sistem: ${msg.text}]\n`;
+                } else if(msg.role === "user") {
+                    fullContextPrompt += `Merss: ${msg.text}\n`;
+                } else if(msg.role === "model") {
+                    fullContextPrompt += `Mini: ${msg.text}\n`;
+                }
+            });
+            fullContextPrompt += "Mini: Balas dalam bahasa Indonesia.";
+
+            // Tembak ke API Chat kamu
+            const apiChatUrl = `https://api.synoxcloud.biz.id/ai-chat/gemini-3.1-pro?pesan=${encodeURIComponent(fullContextPrompt)}`;
+
+            try {
+                const response = await fetch(apiChatUrl);
+                const rawData = await response.text();
+                
+                typingIndicator.remove();
+
+                let cleanTextResponse = "";
+                let hasActionImage = false;
+                let imagePrompt = "";
+                let thoughtText = "";
+
+                // 3. Cek apakah responnya berupa format JSON teks tersembunyi
+                try {
+                    const jsonData = JSON.parse(rawData);
+                    
+                    // Cek jika Gemini mencoba menggunakan tool dalle/image generator
+                    if ((jsonData.action && jsonData.action === "dalle.text2im") || jsonData.action_input) {
+                        hasActionImage = true;
+                        thoughtText = jsonData.thought || "Oke Merss, ini gambar yang kamu minta:";
+                        
+                        try {
+                            let innerInput = typeof jsonData.action_input === 'object' ? jsonData.action_input : JSON.parse(jsonData.action_input);
+                            imagePrompt = innerInput.prompt || innerInput.text || rawData;
+                        } catch(e) {
+                            imagePrompt = jsonData.action_input;
+                        }
+                    } else {
+                        cleanTextResponse = findAiText(jsonData) || rawData;
+                    }
+                } catch(e) {
+                    // Jika bukan JSON melainkan teks murni biasa
+                    cleanTextResponse = rawData;
+                }
+
+                // 4. Eksekusi Hasil Akhir ke Layar Chat
+                if (hasActionImage) {
+                    // Jika terdeteksi minta gambar: Tampilkan thought bahasa Indonesia, lalu generate gambarnya
+                    appendMessage(thoughtText, 'ai-message');
+                    chatHistory.push({ role: "model", text: thoughtText });
+
+                    const apiGambarUrl = `https://api.synoxcloud.biz.id/ephoto/cartoonstyle?text=${encodeURIComponent(imagePrompt)}`;
+                    appendImageMessage(apiGambarUrl);
+                } else {
+                    // Jika ngobrol teks biasa
+                    appendMessage(cleanTextResponse, 'ai-message');
+                    chatHistory.push({ role: "model", text: cleanTextResponse });
+                }
+
+            } catch (error) {
+                console.error(error);
+                if(typingIndicator) typingIndicator.remove();
+                appendMessage('Waduh, koneksi ke Mini terputus nih.', 'system-message');
+            }
+        }
+
+        // Fungsi tambah bubble teks
+        function appendMessage(text, className) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${className}`;
+            messageDiv.innerHTML = text.replace(/\n/g, '<br>');
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return messageDiv;
+        }
+
+        // Fungsi tambah bubble gambar
+        function appendImageMessage(src) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'ai-image-wrapper';
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'ai-image-message';
+            
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = 'AI Generated Image';
+
+            img.onload = function() {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            };
+
+            messageDiv.appendChild(img);
+            wrapper.appendChild(messageDiv);
+            chatMessages.appendChild(wrapper);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return wrapper;
+        }
+
+        // Enter Key Listener
+        userInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
