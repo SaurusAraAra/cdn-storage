@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat - SynoxCloud (Fix Version)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 450px;
+            height: 85vh;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header Biru */
+        .chat-header {
+            background: #007bff;
+            color: #ffffff;
+            padding: 16px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .chat-header span {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: normal;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        /* Area Chat */
+        .chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background-color: #f8fafc;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        /* User - Biru */
+        .message.user {
+            background-color: #007bff;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        /* AI - Putih */
+        .message.ai {
+            background-color: #ffffff;
+            color: #333333;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .message.system {
+            background-color: #fee2e2;
+            color: #ef4444;
+            align-self: center;
+            font-size: 0.8rem;
+            border-radius: 20px;
+            padding: 6px 12px;
+        }
+
+        /* Input Area */
+        .chat-input-container {
+            padding: 12px;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            outline: none;
+            font-size: 0.95rem;
+        }
+
+        .chat-input:focus {
+            border-color: #007bff;
+        }
+
+        .send-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .send-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        ZeNn AI Chat
+        <span id="session-info">Session: Generating...</span>
+    </div>
+    
+    <div class="chat-messages" id="chatMessages">
+        <div class="message ai">Halo! Ada yang bisa saya bantu hari ini?</div>
+    </div>
+
+    <div class="chat-input-container">
+        <input type="text" id="chatInput" class="chat-input" placeholder="Ketik pesan di sini..." autocomplete="off">
+        <button id="sendBtn" class="send-btn">Kirim</button>
+    </div>
+</div>
+
+<script>
+    // Generate UUID Acak untuk Session
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    const sessionId = generateUUID();
+    document.getElementById('session-info').innerText = `Session: ${sessionId.substring(0, 8)}`;
+
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    function appendMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', sender);
+        messageDiv.innerText = text;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return messageDiv;
+    }
+
+    async function sendMessage() {
+        const messageText = chatInput.value.trim();
+        if (!messageText) return;
+
+        // 1. Tampilin pesan user ke layar
+        appendMessage(messageText, 'user');
+        chatInput.value = '';
+
+        // 2. Tampilin status "Sedang mengetik..."
+        const typingIndicator = appendMessage('Sedang mengetik...', 'ai');
+
+        try {
+            // URL target asli milikmu
+            const targetUrl = `https://api.synoxcloud.biz.id/ai-chat/gpt-5-nano?pesan=${encodeURIComponent(messageText)}&session=${sessionId}`;
+            
+            // Menggunakan CORS Proxy yang jauh lebih stabil untuk data JSON
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+            
+            // Ambil data dari server
+            const response = await fetch(proxyUrl);
+            const result = await response.json();
+
+            // Hapus tulisan "Sedang mengetik..." setelah dapet balesan
+            typingIndicator.remove();
+
+            // Cek struktur data sesuai format API kamu
+            if (result && result.data && result.data.answer) {
+                // Tampilkan jawaban asli dari AI
+                appendMessage(result.data.answer, 'ai');
+            } else {
+                appendMessage('Gagal membaca balasan AI. Coba kirim ulang.', 'system');
+            }
+
+        } catch (error) {
+            console.error(error);
+            // Hapus status mengetik jika error jaringan
+            typingIndicator.remove();
+            appendMessage('Koneksi terputus atau server API sedang down.', 'system');
+        }
+    }
+
+    // Jalankan fungsi kirim saat tombol diklik
+    sendBtn.onclick = () => { sendMessage(); };
+
+    // Jalankan fungsi kirim saat menekan tombol Enter
+    chatInput.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    };
+</script>
+
+</body>
+</html>
