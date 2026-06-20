@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Snake Top</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://pl29530271.effectivecpmnetwork.com/a2/45/fe/a245fe2bfab32316e666bff0d786b97e.js"></script>
+    <script src="https://pl29530274.effectivecpmnetwork.com/e5/1e/f0/e51ef0563737181b9e29f11e5871403c.js"></script>
+    <script src="https://www.highperformanceformat.com/ba94a6bfb2570feeae492790088b885b/invoke.js"></script>
+    <script src="https://www.highperformanceformat.com/de4cbafc36a0ef4e24e9500ffc8a95dd/invoke.js"></script>
+    <script src="https://pl29546820.effectivecpmnetwork.com/2d/c1/3e/2dc13e76b77c5173d5f3cbf6c44b7f5d.js"></script>
+    <script async="async" data-cfasync="false" src="https://pl29546822.effectivecpmnetwork.com/6e92f5312962c41baa896616f6731a76/invoke.js"></script>
+</head>
+<body>
+
+<!-- ===== AUTH ===== -->
+<section id="auth-screen">
+    <div class="auth-card">
+        <div class="logo">
+            <div class="icon">🐍</div>
+            <h1>SNAKE TOP</h1>
+            <p>Makan apel. Naik peringkat. Jadi legenda.</p>
+        </div>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="swTab('login',this)">Masuk</button>
+            <button class="tab-btn" onclick="swTab('reg',this)">Daftar</button>
+        </div>
+        <form id="f-login" onsubmit="doLogin(event)">
+            <div class="inp-group"><label>Email</label><input type="email" id="li-email" placeholder="kamu@email.com" required></div>
+            <div class="inp-group"><label>Password</label><input type="password" id="li-pass" placeholder="••••••••" required></div>
+            <button type="submit" class="btn btn-green" id="btn-login">Masuk</button>
+            <div class="err" id="err-login"></div>
+        </form>
+        <form id="f-reg" class="hidden" onsubmit="doReg(event)">
+            <div class="inp-group"><label>Nama Player</label><input type="text" id="ri-name" placeholder="SnakeMaster" required maxlength="16"></div>
+            <div class="inp-group"><label>Email</label><input type="email" id="ri-email" placeholder="kamu@email.com" required></div>
+            <div class="inp-group"><label>Password</label><input type="password" id="ri-pass" placeholder="Minimal 6 karakter" required minlength="6"></div>
+            <button type="submit" class="btn btn-green" id="btn-reg">Buat Akun</button>
+            <div class="err" id="err-reg"></div>
+        </form>
+    </div>
+</section>
+
+<!-- ===== APP ===== -->
+<section id="app-screen">
+    <div class="topbar">
+        <div class="brand"><div class="slogo">🐍</div><span>SNAKE TOP</span></div>
+        <div class="userpill">
+            <div class="uava" id="t-ava">?</div>
+            <span class="uname" id="t-name">Player</span>
+        </div>
+    </div>
+
+    <!-- PLAY LAYER -->
+    <div class="page-layer active" id="play-layer">
+        <div class="hud">
+            <div class="hudbox"><div class="hl">Apel</div><div class="hv" id="h-score">0</div></div>
+            <div class="hudbox best"><div class="hl">Rekor</div><div class="hv" id="h-best">0</div></div>
+            <div class="hudbox"><div class="hl">Rank</div><div class="hv" id="h-rank">-</div></div>
+        </div>
+        <div class="cvswrap">
+            <canvas id="gameCv"></canvas>
+            <div class="wall-badge" id="wall-badge">🔥 WALL PASS</div>
+            <div class="wall-counter" id="wall-counter">Dinding: 0/5</div>
+            <div class="game-overlay" id="ov">
+                <h2 id="ov-t">SNAKE TOP</h2>
+                <p id="ov-d">Tap tombol hijau untuk mulai</p>
+                <div class="bigscore hidden" id="ov-sc">0</div>
+                <button class="btn btn-green" id="ov-btn" onclick="startGame()">▶ MULAI</button>
+            </div>
+        </div>
+        <div class="dpad-wrap">
+            <div class="dpad">
+                <div class="dpad-btn dpad-up" data-dir="up">▲</div>
+                <div class="dpad-btn dpad-left" data-dir="left">◀</div>
+                <div class="dpad-btn dpad-center" data-dir="none">◆</div>
+                <div class="dpad-btn dpad-right" data-dir="right">▶</div>
+                <div class="dpad-btn dpad-down" data-dir="down">▼</div>
+            </div>
+        </div>
+        <div class="hint">Keyboard: ↑↓←→ atau WASD</div>
+    </div>
+
+    <!-- RANK LAYER -->
+    <div class="page-layer" id="rank-layer">
+        <h2 style="font-size:20px; font-weight:800; margin-bottom:4px;">🏆 Global Top</h2>
+        <p style="color:#8b8b9e; font-size:13px; margin-bottom:10px;">Pemain dengan apel terbanyak</p>
+        <div class="live-badge"><div class="dot"></div>LIVE REAL-TIME</div>
+        <div class="lb-list" id="lb-body">
+            <div style="text-align:center;padding:40px;color:#8b8b9e"><div class="spinner" style="margin:0 auto 12px"></div>Memuat...</div>
+        </div>
+        <div id="ad-rank-1" style="margin-top:12px;min-height:250px;display:flex;align-items:center;justify-content:center;background:#0a0a0f;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+            <script>atOptions = { 'key' : 'de4cbafc36a0ef4e24e9500ffc8a95dd', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} };</script>
+            <script src="https://www.highperformanceformat.com/de4cbafc36a0ef4e24e9500ffc8a95dd/invoke.js"></script>
+        </div>
+        <div id="ad-rank-2" style="margin-top:12px;min-height:250px;display:flex;align-items:center;justify-content:center;background:#0a0a0f;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+            <script>atOptions = { 'key' : 'de4cbafc36a0ef4e24e9500ffc8a95dd', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} };</script>
+            <script src="https://www.highperformanceformat.com/de4cbafc36a0ef4e24e9500ffc8a95dd/invoke.js"></script>
+        </div>
+        <!-- Ad iframe -->
+        <div style="margin-top:12px;min-height:250px;display:flex;align-items:center;justify-content:center;background:#0a0a0f;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+            <iframe src="https://www.effectivecpmnetwork.com/tiugi2ca?key=02b54017460132c6bbf3e96009a0c1d4" style="width:100%;height:250px;border:none;border-radius:12px;" scrolling="no"></iframe>
+        </div>
+    </div>
+
+    <!-- WITHDRAW LAYER -->
+    <div class="page-layer" id="withdraw-layer">
+        <h2 style="font-size:20px; font-weight:800; margin-bottom:4px;">💰 Withdraw</h2>
+        <p style="color:#8b8b9e; font-size:13px; margin-bottom:14px;">Tukar saldo jadi uang tunai</p>
+        <div class="wd-card">
+            <h3>💵 Saldo Kamu</h3>
+            <div class="wd-balance" id="wd-balance">Rp 0</div>
+            <div class="wd-sub">100 Apel = Rp 1.000</div>
+        </div>
+        <h3 style="font-size:14px; margin-bottom:8px;">Pilih Nominal</h3>
+        <div class="wd-presets" id="wd-presets">
+            <div class="wd-preset locked"><div class="wd-amt">Rp 1.000</div><div class="wd-lbl">Saldo Kurang</div></div>
+            <div class="wd-preset locked"><div class="wd-amt">Rp 5.000</div><div class="wd-lbl">Saldo Kurang</div></div>
+            <div class="wd-preset locked"><div class="wd-amt">Rp 10.000</div><div class="wd-lbl">Saldo Kurang</div></div>
+            <div class="wd-preset locked"><div class="wd-amt">Rp 25.000</div><div class="wd-lbl">Saldo Kurang</div></div>
+            <div class="wd-preset locked"><div class="wd-amt">Rp 50.000</div><div class="wd-lbl">Saldo Kurang</div></div>
+            <div class="wd-preset locked"><div class="wd-amt">Rp 100.000</div><div class="wd-lbl">Saldo Kurang</div></div>
+        </div>
+        <button class="btn btn-green" onclick="requestWithdraw()">💬 Chat Admin untuk Withdraw</button>
+        <div class="wd-info">
+            <h4>📋 Cara Withdraw</h4>
+            <p>1. Pilih nominal di atas<br>2. Klik tombol hijau untuk chat admin<br>3. Sebutkan kode unik ke admin<br>4. Admin akan proses transfer</p>
+        </div>
+        <div class="wd-code-box hidden" id="wd-code-box">
+            <div class="code" id="wd-code">-</div>
+            <div class="lbl">Kode Withdraw (sebutkan ke admin)</div>
+        </div>
+    </div>
+
+    <!-- SETTINGS LAYER -->
+    <div class="page-layer" id="set-layer">
+        <h2 style="font-size:20px; font-weight:800; margin-bottom:4px;">⚙️ Pengaturan</h2>
+        <p style="color:#8b8b9e; font-size:13px; margin-bottom:14px;">Sesuaikan pengalaman bermainmu</p>
+        <div class="set-group">
+            <h3>🎮 Gameplay</h3>
+            <div class="set-row">
+                <div><h4>Kecepatan</h4><p>Semakin tinggi semakin cepat</p></div>
+                <select id="s-speed" onchange="saveSet()"><option value="150">Pelan</option><option value="100" selected>Normal</option><option value="70">Cepat</option><option value="50">Pro</option></select>
+            </div>
+            <div class="set-row">
+                <div>
+                    <h4>🔥 Dinding Tembus</h4>
+                    <p>Ular bisa lewat dinding (Premium Only)</p>
+                    <div class="unlock-msg" id="wall-msg">🔒 Hanya Premium yang bisa!</div>
+                </div>
+                <div class="tog locked" id="t-wall" onclick="togWall(this)"></div>
+            </div>
+        </div>
+        <div class="set-group">
+            <h3>🎨 Tampilan</h3>
+            <div class="set-row">
+                <div><h4>Warna Ular</h4><p>Pilih warna favoritmu</p></div>
+                <div class="colors">
+                    <div class="c-dot sel" style="background:#00e676" onclick="pickColor(this,'#00e676')"></div>
+                    <div class="c-dot" style="background:#00b0ff" onclick="pickColor(this,'#00b0ff')"></div>
+                    <div class="c-dot" style="background:#ff1744" onclick="pickColor(this,'#ff1744')"></div>
+                    <div class="c-dot" style="background:#ffc400" onclick="pickColor(this,'#ffc400')"></div>
+                    <div class="c-dot" style="background:#e040fb" onclick="pickColor(this,'#e040fb')"></div>
+                </div>
+            </div>
+            <div class="set-row">
+                <div><h4>Grid Arena</h4><p>Tampilkan garis bantu</p></div>
+                <div class="tog on" id="t-grid" onclick="tog(this)"></div>
+            </div>
+        </div>
+        <div id="ad-set-1" style="margin-top:12px;min-height:250px;display:flex;align-items:center;justify-content:center;background:#0a0a0f;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+            <script>atOptions = { 'key' : 'de4cbafc36a0ef4e24e9500ffc8a95dd', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} };</script>
+            <script src="https://www.highperformanceformat.com/de4cbafc36a0ef4e24e9500ffc8a95dd/invoke.js"></script>
+        </div>
+        <div id="ad-set-2" style="margin-top:12px;min-height:250px;display:flex;align-items:center;justify-content:center;background:#0a0a0f;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+            <script>atOptions = { 'key' : 'de4cbafc36a0ef4e24e9500ffc8a95dd', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} };</script>
+            <script src="https://www.highperformanceformat.com/de4cbafc36a0ef4e24e9500ffc8a95dd/invoke.js"></script>
+        </div>
+        <!-- Ad iframe -->
+        <div style="margin-top:12px;min-height:250px;display:flex;align-items:center;justify-content:center;background:#0a0a0f;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+            <iframe src="https://www.effectivecpmnetwork.com/tiugi2ca?key=02b54017460132c6bbf3e96009a0c1d4" style="width:100%;height:250px;border:none;border-radius:12px;" scrolling="no"></iframe>
+        </div>
+    </div>
+
+    <!-- PROFILE LAYER -->
+    <div class="page-layer" id="prof-layer">
+        <div class="pro-card">
+            <div class="pro-ava" id="p-emoji">🐍</div>
+            <div class="pro-name" id="p-name">Player</div>
+            <div class="pro-email" id="p-email">email</div>
+        </div>
+        <div class="stats">
+            <div class="statc"><div class="sn" id="p-apples">0</div><div class="st">Total Apel</div></div>
+            <div class="statc"><div class="sn" id="p-high">0</div><div class="st">Rekor Game</div></div>
+        </div>
+        <div class="stats">
+            <div class="statc"><div class="sn" id="p-balance">Rp 0</div><div class="st">Saldo</div></div>
+            <div class="statc" style="cursor:pointer;" onclick="goPage('withdraw', document.getElementById('nav-withdraw'))"><div class="sn" style="color:#ffc400;">💰</div><div class="st">Withdraw</div></div>
+        </div>
+        <button class="btn btn-red" onclick="doLogout()">🚪 Keluar Akun</button>
+        <div id="ad-prof-1" style="margin-top:12px;min-height:250px;display:flex;align-items:center;justify-content:center;background:#0a0a0f;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+            <script>atOptions = { 'key' : 'de4cbafc36a0ef4e24e9500ffc8a95dd', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} };</script>
+            <script src="https://www.highperformanceformat.com/de4cbafc36a0ef4e24e9500ffc8a95dd/invoke.js"></script>
+        </div>
+        <div id="ad-prof-2" style="margin-top:12px;min-height:250px;display:flex;align-items:center;justify-content:center;background:#0a0a0f;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+            <script>atOptions = { 'key' : 'de4cbafc36a0ef4e24e9500ffc8a95dd', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} };</script>
+            <script src="https://www.highperformanceformat.com/de4cbafc36a0ef4e24e9500ffc8a95dd/invoke.js"></script>
+        </div>
+    </div>
+
+    <!-- OWNER LAYER -->
+    <div class="page-layer" id="owner-layer">
+        <div class="owner-card">
+            <h2>👑 OWNER PANEL</h2>
+            <p>Kelola pemain & withdraw</p>
+        </div>
+        <div class="own-stat-grid">
+            <div class="own-stat"><div class="sn" id="own-total">0</div><div class="st">Total Pemain</div></div>
+            <div class="own-stat"><div class="sn" id="own-pending">0</div><div class="st">Withdraw Pending</div></div>
+        </div>
+        <div class="set-group">
+            <h3>🔍 Cari Pemain</h3>
+            <div class="user-search">
+                <input type="text" id="own-search" placeholder="Cari nama atau email..." oninput="searchUsers()">
+            </div>
+            <div class="user-results" id="own-results"></div>
+        </div>
+        <div class="set-group">
+            <h3>📋 Daftar Withdraw</h3>
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                    <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+                        <th style="padding:10px;text-align:left;color:#8b8b9e;font-size:11px;">Nama</th>
+                        <th style="padding:10px;text-align:left;color:#8b8b9e;font-size:11px;">Nominal</th>
+                        <th style="padding:10px;text-align:left;color:#8b8b9e;font-size:11px;">Status</th>
+                        <th style="padding:10px;text-align:left;color:#8b8b9e;font-size:11px;">Kode</th>
+                        <th style="padding:10px;text-align:left;color:#8b8b9e;font-size:11px;">Tanggal</th>
+                    </tr></thead>
+                    <tbody id="own-withdraws"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Ad iframe -->
+        <div style="margin-top:12px;min-height:250px;display:flex;align-items:center;justify-content:center;background:#0a0a0f;border-radius:12px;border:1px solid rgba(255,255,255,0.04);">
+            <iframe src="https://www.effectivecpmnetwork.com/tiugi2ca?key=02b54017460132c6bbf3e96009a0c1d4" style="width:100%;height:250px;border:none;border-radius:12px;" scrolling="no"></iframe>
+        </div>
+    </div>
+
+    <nav class="bnav">
+        <button class="navbtn active" onclick="goPage('play',this)"><span class="ni">🎮</span><span>Play</span></button>
+        <button class="navbtn" onclick="goPage('rank',this)"><span class="ni">🏆</span><span>Rank</span></button>
+        <button class="navbtn" onclick="goPage('withdraw',this)" id="nav-withdraw"><span class="ni">💰</span><span>WD</span></button>
+        <button class="navbtn" onclick="goPage('set',this)"><span class="ni">⚙️</span><span>Set</span></button>
+        <button class="navbtn" onclick="goPage('prof',this)"><span class="ni">👤</span><span>Me</span></button>
+        <button class="navbtn hidden" onclick="goPage('owner',this)" id="nav-owner"><span class="ni">👑</span><span>Owner</span></button>
+    </nav>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
