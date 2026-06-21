@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Al-Qur'an Online</title>
+    <!-- Google Fonts & Font Awesome untuk Icon Modern -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: #1e293b;
+            padding-bottom: 40px;
+        }
+
+        header {
+            background: #ffffff;
+            text-align: center;
+            padding: 25px 20px 15px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            color: #0f766e;
+            font-size: 1.8rem;
+            cursor: pointer;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        /* Menu Search Modern */
+        .search-container {
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 45px;
+            border: 2px solid #e2e8f0;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+            background-color: #f8fafc;
+        }
+
+        .search-input:focus {
+            border-color: #14b8a6;
+            background-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.1);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 25px auto;
+            padding: 0 20px;
+        }
+
+        /* Tombol Kembali Modern */
+        .btn-kembali {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #334155;
+            margin-bottom: 20px;
+            text-decoration: none;
+        }
+
+        .btn-kembali:hover {
+            background: #f1f5f9;
+        }
+
+        /* Grid Kotak Persegi Panjang */
+        .grid-surah {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 15px;
+        }
+
+        .card-surah {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+        }
+
+        .card-surah:hover {
+            border-color: #14b8a6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.1);
+        }
+
+        .surah-info-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nomor-bulat {
+            background: #f1f5f9;
+            color: #64748b;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .nama-latin {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 0.95rem;
+        }
+
+        .arti-surah {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .nama-arab {
+            font-family: 'Amiri', serif;
+            font-size: 1.2rem;
+            color: #0f766e;
+        }
+
+        /* Desain Halaman Ayat */
+        .judul-baca {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .judul-baca h2 {
+            color: #0f766e;
+            font-size: 1.6rem;
+        }
+
+        .ayat-item {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .ayat-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .btn-audio {
+            background: #f1f5f9;
+            border: none;
+            color: #14b8a6;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-audio:hover {
+            background: #14b8a6;
+            color: white;
+        }
+
+        .btn-audio.playing {
+            background: #ef4444;
+            color: white;
+        }
+
+        .teks-arab {
+            font-family: 'Amiri', serif;
+            font-size: 2rem;
+            text-align: right;
+            direction: rtl;
+            line-height: 2.3;
+            margin-bottom: 12px;
+            color: #0f172a;
+        }
+
+        .teks-latin {
+            font-style: italic;
+            color: #0d9488;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        .teks-arti {
+            font-size: 0.95rem;
+            color: #334155;
+        }
+
+        /* Teks Kredit Di Bawah Bacaan & Di Footer */
+        .powered-by-content {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 25px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .footer-main {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .footer-sub {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .loading, .no-match {
+            text-align: center;
+            color: #64748b;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 onclick="resetHalaman()">Al-Qur'an Online</h1>
+        <!-- Fitur Search Menu -->
+        <div class="search-container" id="searchWrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="Cari nama surah atau nomor..." oninput="filterSurah()">
+        </div>
+    </header>
+
+    <div class="container" id="app">
+        <!-- Konten diisi via JavaScript -->
+    </div>
+
+    <footer>
+        <div class="footer-main">AL-QURAN ONLINE</div>
+        <div class="footer-sub">Powered by Muhammad Soleh</div>
+    </footer>
+
+    <script>
+        const apiBaseUrl = "https://equran.id/api/v2/surat";
+        let daftarSurahCache = [];
+        let audioAktif = null;
+        let tombolAktif = null;
+
+        window.addEventListener('hashchange', ruteHalaman);
+        window.addEventListener('load', inisialisasi);
+
+        async function inisialisasi() {
+            await ambilSemuaSurah();
+            ruteHalaman();
+        }
+
+        async function ambilSemuaSurah() {
+            try {
+                const respon = await fetch(apiBaseUrl);
+                const data = await respon.json();
+                daftarSurahCache = data.data;
+            } catch (error) {
+                document.getElementById('app').innerHTML = "<p style='text-align:center; color:red;'>Gagal menyambung ke server Al-Qur'an.</p>";
+            }
+        }
+
+        function ruteHalaman() {
+            matikanAudio();
+            const hash = window.location.hash;
+            const searchWrapper = document.getElementById('searchWrapper');
+            
+            if (hash.startsWith('#surat-')) {
+                // Sembunyikan pencarian jika sedang membaca surah agar bersih
+                searchWrapper.style.display = 'none'; 
+                const nomorSurah = hash.replace('#surat-', '');
+                tampilkanBacaanSurah(nomorSurah);
+            } else {
+                // Tampilkan pencarian jika berada di halaman utama
+                searchWrapper.style.display = 'block'; 
+                tampilkanDaftarSurah(daftarSurahCache);
+            }
+        }
+
+        // Tampilan 1: Grid Semua Surah
+        function tampilkanDaftarSurah(listSurah) {
+            const app = document.getElementById('app');
+            
+            if(listSurah.length === 0) {
+                app.innerHTML = '<div class="no-match">Surah tidak ditemukan. Coba kata kunci lain.</div>';
+                return;
+            }
+
+            let html = '<div class="grid-surah">';
+            listSurah.forEach(surah => {
+                html += `
+                    <a href="#surat-${surah.nomor}" class="card-surah">
+                        <div class="surah-info-left">
+                            <div class="nomor-bulat">${surah.nomor}</div>
+                            <div>
+                                <div class="nama-latin">${surah.namaLatin}</div>
+                                <div class="arti-surah">${surah.arti}</div>
+                            </div>
+                        </div>
+                        <div class="nama-arab">${surah.nama}</div>
+                    </a>
+                `;
+            });
+            html += '</div>';
+            app.innerHTML = html;
+        }
+
+        // Fungsi Filter / Fitur Search
+        function filterSurah() {
+            const kataKunci = document.getElementById('searchInput').value.toLowerCase();
+            const hasilFilter = daftarSurahCache.filter(surah => {
+                return surah.namaLatin.toLowerCase().includes(kataKunci) || 
+                       surah.nomor.toString().includes(kataKunci);
+            });
+            tampilkanDaftarSurah(hasilFilter);
+        }
+
+        // Tampilan 2: Isi Bacaan Ayat & Teks Kredit Bawah Bacaan
+        async function tampilkanBacaanSurah(nomor) {
+            const app = document.getElementById('app');
+            app.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Memuat surah...</div>';
+
+            try {
+                const respon = await fetch(`${apiBaseUrl}/${nomor}`);
+                const resData = await respon.json();
+                const surah = resData.data;
+
+                let html = `
+                    <a href="#" class="btn-kembali"><i class="fas fa-arrow-left"></i> Kembali ke Daftar</a>
+                    <div class="judul-baca">
+                        <h2>${surah.namaLatin} (${surah.nama})</h2>
+                        <p style="color: #64748b; font-size: 0.9rem; margin-top: 4px;">${surah.arti} • ${surah.jumlahAyat} Ayat</p>
+                    </div>
+                `;
+
+                if (nomor != 1 && nomor != 9) {
+                    html += `<div style="text-align:center; font-family:'Amiri'; font-size:2rem; margin: 30px 0; color:#0f172a;">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</div>`;
+                }
+
+                surah.ayat.forEach(ayat => {
+                    const urlSuara = ayat.audio['01'];
+                    html += `
+                        <div class="ayat-item">
+                            <div class="ayat-meta">
+                                <span class="nomor-bulat" style="width:auto; padding:0 12px; border-radius:20px;">Ayat ${ayat.nomorAyat}</span>
+                                <button class="btn-audio" onclick="kontrolAudio('${urlSuara}', this)">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                            <div class="teks-arab">${ayat.teksArab}</div>
+                            <div class="teks-latin">${ayat.teksLatin}</div>
+                            <div class="teks-arti">${ayat.teksIndonesia}</div>
+                        </div>
+                    `;
+                });
+
+                // Penempatan Teks Kecil Tepat di Bawah Bacaan Surah
+                html += `
+                    <div class="powered-by-content">
+                        Powered by Muhammad Soleh
+                    </div>
+                `;
+
+                app.innerHTML = html;
+                window.scrollTo(0, 0);
+
+            } catch (error) {
+                app.innerHTML = "<p style='text-align:center; color:red;'>Gagal memuat isi surah.</p>";
+            }
+        }
+
+        function resetHalaman() {
+            document.getElementById('searchInput').value = '';
+            window.location.hash = '';
+        }
+
+        // Kontrol Audio Ayat (Play/Off Modern)
+        function kontrolAudio(url, tombol) {
+            if (audioAktif && tombolAktif === tombol) {
+                matikanAudio();
+                return;
+            }
+
+            if (audioAktif) {
+                matikanAudio();
+            }
+
+            audioAktif = new Audio(url);
+            tombolAktif = tombol;
+
+            audioAktif.play();
+            tombol.classList.add('playing');
+            tombol.innerHTML = '<i class="fas fa-stop"></i>';
+
+            audioAktif.onended = () => {
+                matikanAudio();
+            };
+        }
+
+        function matikanAudio() {
+            if (audioAktif) {
+                audioAktif.pause();
+                audioAktif.currentTime = 0;
+            }
+            if (tombolAktif) {
+                tombolAktif.classList.remove('playing');
+                tombolAktif.innerHTML = '<i class="fas fa-play"></i>';
+            }
+            audioAktif = null;
+            tombolAktif = null;
+        }
+    </script>
+</body>
+</html>
