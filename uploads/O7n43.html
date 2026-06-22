@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nanzz AI Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  
+  [data-theme="dark"] {
+    --bg: #0a0e1a;
+    --bg-2: #111827;
+    --card: #1f2937;
+    --input: #111827;
+    --border: #374151;
+    --text: #f3f4f6;
+    --text-2: #9ca3af;
+    --accent: #38bdf8;
+    --accent-2: #a78bfa;
+    --user: #0ea5e9;
+    --success: #10b981;
+    --error: #ef4444;
+  }
+  
+  [data-theme="light"] {
+    --bg: #f8fafc;
+    --bg-2: #ffffff;
+    --card: #ffffff;
+    --input: #f1f5f9;
+    --border: #cbd5e1;
+    --text: #0f172a;
+    --text-2: #475569;
+    --accent: #0ea5e9;
+    --accent-2: #8b5cf6;
+    --user: #0284c7;
+    --success: #059669;
+    --error: #dc2626;
+  }
+  
+  [data-theme="midnight"] {
+    --bg: #0c0a1d;
+    --bg-2: #15122b;
+    --card: #1e1b3a;
+    --input: #15122b;
+    --border: #2d2a4a;
+    --text: #e5e7ff;
+    --text-2: #a5b4fc;
+    --accent: #818cf8;
+    --accent-2: #c084fc;
+    --user: #6366f1;
+    --success: #34d399;
+    --error: #f87171;
+  }
+  
+  [data-theme="forest"] {
+    --bg: #0c1612;
+    --bg-2: #112219;
+    --card: #1a2e24;
+    --input: #112219;
+    --border: #2d4a3d;
+    --text: #d1fae5;
+    --text-2: #6ee7b7;
+    --accent: #34d399;
+    --accent-2: #2dd4bf;
+    --user: #10b981;
+    --success: #22c55e;
+    --error: #f87171;
+  }
+  
+  [data-theme="sunset"] {
+    --bg: #1a0e0e;
+    --bg-2: #2b1717;
+    --card: #3d2323;
+    --input: #2b1717;
+    --border: #5a3a3a;
+    --text: #ffe4e6;
+    --text-2: #fda4af;
+    --accent: #fb7185;
+    --accent-2: #fbbf24;
+    --user: #f43f5e;
+    --success: #4ade80;
+    --error: #f87171;
+  }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.4s var(--ease), color 0.4s var(--ease);
+  }
+
+ .app {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--bg-2);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+
+ .header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg-2) 95%, transparent);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: relative;
+    z-index: 100;
+  }
+
+ .model-selector {
+    position: relative;
+  }
+ .model-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s var(--ease);
+    color: var(--text);
+  }
+ .model-btn:hover { border-color: var(--accent); }
+ .model-btn h2 { font-size: 16px; font-weight: 600; color: var(--text); }
+ .model-btn svg { transition: transform 0.2s var(--ease); color: var(--text-2); }
+ .model-btn.open svg { transform: rotate(180deg); }
+
+ .model-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 320px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 8px;
+    display: none;
+    z-index: 200;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+ .model-dropdown.show { display: block; animation: dropdownIn 0.2s var(--ease); }
+  @keyframes dropdownIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+ .dropdown-section {
+    padding: 8px 12px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+ .model-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s var(--ease);
+    color: var(--text);
+  }
+ .model-option:hover { background: var(--input); }
+ .model-option.active { background: var(--input); border: 1px solid var(--accent); }
+ .model-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+ .model-info h3 { font-size: 14px; font-weight: 600; color: var(--text); }
+ .model-info p { font-size: 12px; color: var(--text-2); }
+
+ .history-item {
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s var(--ease);
+    font-size: 13px;
+    color: var(--text-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+ .history-item:hover { background: var(--input); color: var(--text); }
+
+ .header-actions {
+    display: flex;
+    gap: 8px;
+  }
+ .icon-btn {
+    width: 40px;
+    height: 40px;
+    background: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-2);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.2s var(--ease);
+  }
+ .icon-btn:hover { background: var(--card); color: var(--text); border-color: var(--accent); }
+
+ .theme-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 12px;
+    display: none;
+    z-index: 200;
+  }
+ .theme-menu.show { display: block; animation: dropdownIn 0.2s var(--ease); }
+ .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+ .theme-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s var(--ease);
+  }
+ .theme-btn:hover { transform: scale(1.1); }
+ .theme-btn.active { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent); }
+ .theme-btn[data-t="dark"] { background: linear-gradient(135deg, #0a0e1a, #1f2937); }
+ .theme-btn[data-t="light"] { background: linear-gradient(135deg, #f8fafc, #ffffff); }
+ .theme-btn[data-t="midnight"] { background: linear-gradient(135deg, #0c0a1d, #1e1b3a); }
+ .theme-btn[data-t="forest"] { background: linear-gradient(135deg, #0c1612, #1a2e24); }
+ .theme-btn[data-t="sunset"] { background: linear-gradient(135deg, #1a0e0e, #3d2323); }
+
+ .chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+ .msg {
+    display: flex;
+    gap: 14px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: msgIn 0.5s var(--ease) forwards;
+  }
+  @keyframes msgIn { to { opacity: 1; transform: translateY(0); } }
+ .msg.user { flex-direction: row-reverse; }
+
+ .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 600;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+ .msg.ai .avatar {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white;
+  }
+ .msg.user .avatar { background: var(--user); color: white; }
+
+ .content {
+    max-width: 75%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+ .bubble {
+    padding: 14px 18px;
+    border-radius: var(--radius);
+    background: var(--card);
+    border: 1px solid var(--border);
+    line-height: 1.7;
+    color: var(--text);
+  }
+ .msg.user .bubble {
+    background: var(--user);
+    color: white;
+    border: none;
+    border-bottom-right-radius: 4px;
+  }
+ .msg.ai .bubble { border-bottom-left-radius: 4px; }
+
+ .bubble pre {
+    background: var(--bg);
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+    margin: 10px 0;
+    border: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+ .bubble code { font-family: 'JetBrains Mono', monospace; font-size: 0.9em; }
+ .bubble p { margin-bottom: 8px; color: var(--text); }
+ .bubble p:last-child { margin-bottom: 0; }
+
+ .meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-2);
+  }
+ .model-tag { font-weight: 600; color: var(--accent); }
+ .msg-actions {
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity 0.2s var(--ease);
+  }
+ .msg:hover .msg-actions { opacity: 1; }
+ .copy-btn {
+    background: var(--input);
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s var(--ease);
+  }
+ .copy-btn:hover { background: var(--card); color: var(--text); }
+
+ .input-area {
+    padding: 20px 28px;
+    border-top: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg-2) 95%, transparent);
+    backdrop-filter: blur(12px);
+  }
+ .input-box {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    background: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 12px 12px 18px;
+    transition: all 0.2s var(--ease);
+  }
+ .input-box:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+  textarea {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+    resize: none;
+    max-height: 200px;
+    line-height: 1.6;
+  }
+  textarea::placeholder { color: var(--text-2); }
+ .send {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border: none;
+    border-radius: var(--radius-sm);
+    color: white;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.2s var(--ease);
+    flex-shrink: 0;
+  }
+ .send:disabled { opacity: 0.4; cursor: not-allowed; }
+ .send:not(:disabled):hover { transform: scale(1.05); }
+ .send:not(:disabled):active { transform: scale(0.95); }
+
+ .skeleton {
+    display: flex;
+    gap: 14px;
+    opacity: 0;
+    animation: fadeIn 0.3s var(--ease) forwards;
+  }
+  @keyframes fadeIn { to { opacity: 1; } }
+ .skeleton .avatar { background: var(--border); }
+ .skeleton .bubble { background: var(--card); width: 60%; }
+ .skeleton-line {
+    height: 12px;
+    background: var(--border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+ .skeleton-line:nth-child(1) { width: 80%; }
+ .skeleton-line:nth-child(2) { width: 60%; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+ .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    padding: 14px 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    transition: all 0.4s var(--ease);
+    z-index: 300;
+    color: var(--text);
+  }
+ .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+ .toast.success { border-left: 4px solid var(--success); }
+ .toast.error { border-left: 4px solid var(--error); }
+
+  @media (max-width: 768px) {
+   .app { border: none; }
+   .content { max-width: 85%; }
+   .header { padding: 14px 16px; }
+   .chat { padding: 20px 16px; }
+   .input-area { padding: 16px; }
+   .model-dropdown { min-width: 280px; left: -20px; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="model-selector">
+        <button class="model-btn" id="modelBtn">
+          <h2 id="currentModel">ChatGPT 5 Nano</h2>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </button>
+        <div class="model-dropdown" id="modelDropdown"></div>
+      </div>
+
+      <div class="header-actions">
+        <div style="position: relative;">
+          <button class="icon-btn" id="themeBtn" title="Ganti tema">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+          </button>
+          <div class="theme-menu" id="themeMenu">
+            <div class="theme-grid">
+              <button class="theme-btn" data-t="dark" title="Dark"></button>
+              <button class="theme-btn" data-t="light" title="Light"></button>
+              <button class="theme-btn" data-t="midnight" title="Midnight"></button>
+              <button class="theme-btn" data-t="forest" title="Forest"></button>
+              <button class="theme-btn" data-t="sunset" title="Sunset"></button>
+            </div>
+          </div>
+        </div>
+        <button class="icon-btn" id="clearBtn" title="Hapus chat">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="chat" id="chat"></main>
+
+    <div class="input-area">
+      <div class="input-box">
+        <textarea id="input" placeholder="Tanya apa aja..." rows="1"></textarea>
+        <button class="send" id="send" disabled>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+    const models = [
+    { id: 'chatgpt', name: 'ChatGPT 5 Nano', desc: 'Cepat & akurat' },
+    { id: 'claude', name: 'Claude', desc: 'Analitis & detail' },
+    { id: 'gemini', name: 'Gemini', desc: 'Google AI' },
+    { id: 'copilot', name: 'Copilot Pro', desc: 'Microsoft AI' },
+    { id: 'uncensored', name: 'Roleplay Unrestricted', desc: 'Anubis 70B ⚠️' },
+    { id: 'blackbox', name: 'Blackbox', desc: 'Jago coding' },
+    { id: 'unlimited-ai', name: 'UnlimitedAI', desc: 'Tanpa batas' },
+    { id: 'deepseek', name: 'DeepSeek', desc: 'Reasoning kuat' },
+    { id: 'qwen', name: 'Qwen 3 30B', desc: 'Alibaba Cloud' },
+    { id: 'perplexity', name: 'Perplexity', desc: 'Riset real-time' },
+    { id: 'grok', name: 'Grok', desc: 'xAI dengan humor' },
+    { id: 'wormgpt', name: 'WormGPT', desc: 'Unrestricted ⚠️' }
+  ];
+
+  const endpoints = {
+    blackbox: q => `https://api-nanzz.my.id/docs/api/ai/blackbox.php?q=${encodeURIComponent(q)}`,
+    gemini: q => `https://api-nanzz.my.id/docs/api/ai/gemini.php?text=${encodeURIComponent(q)}`,
+    copilot: q => `https://api-nanzz.my.id/docs/api/ai/copilot.php?q=${encodeURIComponent(q)}`,
+    uncensored: q => `https://api-nanzz.my.id/docs/api/ai/uncensored-ai.php?text=${encodeURIComponent(q)}`,
+    'unlimited-ai': q => `https://api-nanzz.my.id/docs/api/ai/unlimited-ai.php?prompt=${encodeURIComponent(q)}&model=chat-model-reasoning`,
+    wormgpt: q => `https://api-nanzz.my.id/docs/api/ai/worm-gpt.php?prompt=${encodeURIComponent(q)}`,
+    chatgpt: q => `https://api-nanzz.my.id/docs/api/ai/chat-gpt.php?text=${encodeURIComponent(q)}&model=chatgpt`,
+    claude: q => `https://api-nanzz.my.id/docs/api/ai/chat-gpt.php?text=${encodeURIComponent(q)}&model=claude`,
+    deepseek: q => `https://api-nanzz.my.id/docs/api/ai/chat-gpt.php?text=${encodeURIComponent(q)}&model=deepseek`,
+    qwen: q => `https://api-nanzz.my.id/docs/api/ai/chat-gpt.php?text=${encodeURIComponent(q)}&model=qwen`,
+    perplexity: q => `https://api-nanzz.my.id/docs/api/ai/chat-gpt.php?text=${encodeURIComponent(q)}&model=perplexity`,
+    grok: q => `https://api-nanzz.my.id/docs/api/ai/chat-gpt.php?text=${encodeURIComponent(q)}&model=grok`
+  };
+
+  let currentModel = 'chatgpt';
+  let history = JSON.parse(localStorage.getItem('nanzz-chat-v3') || '[]');
+
+  const chat = document.getElementById('chat');
+  const input = document.getElementById('input');
+  const send = document.getElementById('send');
+  const modelBtn = document.getElementById('modelBtn');
+  const modelDropdown = document.getElementById('modelDropdown');
+  const currentModelText = document.getElementById('currentModel');
+  const themeBtn = document.getElementById('themeBtn');
+  const themeMenu = document.getElementById('themeMenu');
+  const clearBtn = document.getElementById('clearBtn');
+  const toast = document.getElementById('toast');
+
+  function init() {
+    renderModelDropdown();
+    loadHistory();
+    loadTheme();
+    if (history.length === 0) {
+      addMsg('Halo! Pilih model AI di atas terus tanya apa aja. Bisa ganti tema juga 👆', false, 'system');
+    }
+  }
+
+  function getRecentHistory() {
+    const userMsgs = history.filter(h => h.user).slice(-5).reverse();
+    return userMsgs;
+  }
+
+  function renderModelDropdown() {
+    const recentHistory = getRecentHistory();
+    const historyHTML = recentHistory.length > 0 ? `
+      <div class="dropdown-section">History Terakhir</div>
+      ${recentHistory.map(h => `
+        <div class="history-item" data-prompt="${escapeHtml(h.content)}">
+          ${escapeHtml(h.content.substring(0, 40))}${h.content.length > 40 ? '...' : ''}
+        </div>
+      `).join('')}
+      <div style="height: 1px; background: var(--border); margin: 8px 0;"></div>
+    ` : '';
+
+    modelDropdown.innerHTML = `
+      ${historyHTML}
+      <div class="dropdown-section">Pilih Model</div>
+      ${models.map(m => `
+        <div class="model-option ${m.id === currentModel ? 'active' : ''}" data-id="${m.id}">
+          <div class="model-dot"></div>
+          <div class="model-info">
+            <h3>${m.name}</h3>
+            <p>${m.desc}</p>
+          </div>
+        </div>
+      `).join('')}
+    `;
+    
+    document.querySelectorAll('.model-option').forEach(opt => {
+      opt.onclick = () => {
+        currentModel = opt.dataset.id;
+        currentModelText.textContent = models.find(m => m.id === currentModel).name;
+        modelDropdown.classList.remove('show');
+        modelBtn.classList.remove('open');
+        showToast(`Model: ${models.find(m => m.id === currentModel).name}`, 'success');
+        renderModelDropdown();
+      };
+    });
+
+    document.querySelectorAll('.history-item').forEach(item => {
+      item.onclick = () => {
+        input.value = item.dataset.prompt;
+        input.focus();
+        input.dispatchEvent(new Event('input'));
+        modelDropdown.classList.remove('show');
+        modelBtn.classList.remove('open');
+      };
+    });
+  }
+
+  function loadHistory() {
+    chat.innerHTML = '';
+    history.forEach(h => addMsg(h.content, h.user, h.model, false));
+  }
+
+  function saveHistory() {
+    localStorage.setItem('nanzz-chat-v3', JSON.stringify(history));
+    renderModelDropdown();
+  }
+
+  function parseResponse(model, data) {
+    if (!data.status) throw new Error('API error');
+    switch(model) {
+      case 'blackbox': return data.result.response;
+      case 'gemini': return data.result;
+      case 'copilot': return data.result.text;
+      case 'uncensored': return data.result.text;
+      case 'unlimited-ai': return data.result.text;
+      case 'wormgpt': return data.result.response;
+      default: return data.result.text;
+    }
+  }
+
+  function escapeHtml(t) {
+    const d = document.createElement('div');
+    d.textContent = t;
+    return d.innerHTML;
+  }
+
+  function formatText(t) {
+    return escapeHtml(t)
+      .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n/g, '<br>');
+  }
+
+    function addMsg(content, isUser = false, model = '', animate = true) {
+    const msg = document.createElement('div');
+    msg.className = `msg ${isUser ? 'user' : 'ai'}`;
+    if (!animate) msg.style.animation = 'none';
+    
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    avatar.textContent = isUser ? 'U' : 'AI';
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'content';
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = isUser ? escapeHtml(content) : formatText(content);
+    
+    contentDiv.appendChild(bubble);
+    
+    if (!isUser && model !== 'system') {
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.innerHTML = `
+        <span class="model-tag">${models.find(m => m.id === model)?.name || model}</span>
+        <div class="msg-actions">
+          <button class="copy-btn" onclick="copyText(\`${content.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">Copy</button>
+        </div>
+      `;
+      contentDiv.appendChild(meta);
+    }
+    
+    msg.appendChild(avatar);
+    msg.appendChild(contentDiv);
+    chat.appendChild(msg);
+    chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+    
+    if (animate && model !== 'system') {
+      history.push({ content, user: isUser, model: isUser ? null : model });
+      saveHistory();
+    }
+  }
+
+  function showSkeleton() {
+    const sk = document.createElement('div');
+    sk.className = 'skeleton';
+    sk.id = 'skeleton';
+    sk.innerHTML = `
+      <div class="avatar"></div>
+      <div class="bubble">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+      </div>
+    `;
+    chat.appendChild(sk);
+    chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+  }
+
+  function hideSkeleton() {
+    document.getElementById('skeleton')?.remove();
+  }
+
+  function showToast(text, type = 'success') {
+    toast.className = `toast ${type} show`;
+    toast.innerHTML = text;
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  window.copyText = (text) => {
+    navigator.clipboard.writeText(text);
+    showToast('Copied!', 'success');
+  };
+
+  async function sendMsg() {
+    const prompt = input.value.trim();
+    if (!prompt) return;
+    
+    addMsg(prompt, true);
+    input.value = '';
+    input.style.height = 'auto';
+    send.disabled = true;
+    showSkeleton();
+    
+    try {
+      const url = endpoints[currentModel](prompt);
+      const res = await fetch(url);
+      const data = await res.json();
+      const text = parseResponse(currentModel, data);
+      
+      hideSkeleton();
+      addMsg(text, false, currentModel);
+    } catch (e) {
+      hideSkeleton();
+      addMsg(`Error: ${e.message}`, false, 'error');
+      showToast('Gagal fetch API', 'error');
+    } finally {
+      send.disabled = false;
+      input.focus();
+    }
+  }
+
+  function loadTheme() {
+    const saved = localStorage.getItem('nanzz-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+    document.querySelectorAll('.theme-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.t === saved);
+    });
+  }
+
+  // Dropdown toggles
+  modelBtn.onclick = (e) => {
+    e.stopPropagation();
+    modelDropdown.classList.toggle('show');
+    modelBtn.classList.toggle('open');
+    themeMenu.classList.remove('show');
+  };
+
+  themeBtn.onclick = (e) => {
+    e.stopPropagation();
+    themeMenu.classList.toggle('show');
+    modelDropdown.classList.remove('show');
+    modelBtn.classList.remove('open');
+  };
+
+  document.addEventListener('click', () => {
+    modelDropdown.classList.remove('show');
+    modelBtn.classList.remove('open');
+    themeMenu.classList.remove('show');
+  });
+
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const theme = btn.dataset.t;
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('nanzz-theme', theme);
+      document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      themeMenu.classList.remove('show');
+      showToast(`Tema ${theme}`, 'success');
+    };
+  });
+
+  input.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+    send.disabled = !this.value.trim();
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMsg();
+    }
+  });
+
+  send.onclick = sendMsg;
+
+  clearBtn.onclick = () => {
+    if (confirm('Hapus semua chat?')) {
+      history = [];
+      saveHistory();
+      chat.innerHTML = '';
+      addMsg('Chat udah dibersihin. Mau tanya apa?', false, 'system');
+      showToast('Chat dibersihkan', 'success');
+    }
+  };
+
+  init();
+</script>
+</body>
+</html>
