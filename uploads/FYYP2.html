@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plis Maafin Aku 🥺</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Quicksand:wght@500&display=swap');
+  
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at top, #ff9bbf, #ff5d8f, #c9184a);
+    overflow: hidden;
+    font-family: 'Quicksand', sans-serif;
+  }
+
+  /* Lope-lope terbang di background */
+  .heart-bg {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    transform: rotate(45deg);
+    opacity: 0.3;
+    animation: float 6s infinite ease-in;
+  }
+  .heart-bg::before, .heart-bg::after {
+    content: "";
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    border-radius: 50%;
+    background: #fff;
+  }
+  .heart-bg::before { top: -10px; left: 0; }
+  .heart-bg::after { left: -10px; top: 0; }
+  @keyframes float {
+    0% { transform: translateY(100vh) rotate(45deg) scale(0.5); opacity: 0; }
+    50% { opacity: 0.6; }
+    100% { transform: translateY(-10vh) rotate(45deg) scale(1.2); opacity: 0; }
+  }
+
+  .card {
+    width: 340px;
+    height: 480px;
+    perspective: 1500px;
+    z-index: 10;
+  }
+
+  .card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: transform 1s cubic-bezier(.68,-0.55,.27,1.55);
+    transform-style: preserve-3d;
+  }
+
+  .card.open .card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .card-front, .card-back {
+    position: absolute;
+    inset: 0;
+    border-radius: 30px;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(255,255,255,0.3);
+  }
+
+  .card-front {
+    background: linear-gradient(180deg, #fff, #ffe3ec);
+    color: #c9184a;
+    border: 3px solid #fff;
+    animation: glow 2s infinite alternate;
+  }
+  @keyframes glow {
+    from { box-shadow: 0 0 20px #ff8fab; }
+    to { box-shadow: 0 0 40px #ff4d6d; }
+  }
+
+  .card-front h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 3rem;
+    text-shadow: 0 0 10px #ff8fab;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%,100%{ transform: scale(1); }
+    50%{ transform: scale(1.1); }
+  }
+
+  .big-heart {
+    font-size: 4rem;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 15px #ff4d6d);
+  }
+
+  .card-back {
+    background: linear-gradient(180deg, #ff4d6d, #c9184a);
+    color: #fff;
+    transform: rotateY(180deg);
+    border: 3px solid #fff;
+  }
+
+  .card-back h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.8rem;
+    margin-bottom: 12px;
+  }
+
+  .card-back p {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .btn-maaf {
+    margin-top: 20px;
+    background: #fff;
+    color: #c9184a;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s;
+  }
+  .btn-maaf:hover {
+    transform: scale(1.1) rotate(-2deg);
+    background: #ffe5ec;
+  }
+
+  .confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    top: -20px;
+    animation: drop 4s linear forwards;
+    z-index: 999;
+  }
+  @keyframes drop {
+    to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Lope background random -->
+<script>
+  for(let i=0; i<20; i++){
+    let h = document.createElement('div');
+    h.className = 'heart-bg';
+    h.style.left = Math.random()*100 + 'vw';
+    h.style.animationDelay = Math.random()*5 + 's';
+    h.style.width = h.style.height = (15 + Math.random()*20) + 'px';
+    document.body.appendChild(h);
+  }
+</script>
+
+<div class="card" id="card">
+  <div class="card-inner">
+    <!-- Depan -->
+    <div class="card-front">
+      <div class="big-heart">💖💘💝</div>
+      <h2>MAAF YA DEDEE🤍🥺</h2>
+      <p>Klik kartu biar terbuka💕</p>
+    </div>
+
+    <!-- Belakang -->
+    <div class="card-back">
+      <h2>Klarifikasi abang buat dede</h2>
+        dedee abang minta maaf yaa<br>
+        Maafin abang ya? maaf yahh abang chat mantan abang, abang cuma gabut aja itu dedee jadi jangan salah paham yaaa? maaf yaaa bisa ga ngulang kaya dulu lagi kata mama kalo bisa di perbaiki, perbaiki aja dulu ya? maaf yahh nanti abang kasih hadiahh yaa kali ini aja maafin yaa dedee abang tau abang salah nyesel banget🥺 <br>abang janji gak ngulangin lagi.<br>Plis maafin aku yaa~ 🙏💗
+      </>
+      <button class="btn-maaf" onclick="kirimMaaf()">Maaf in abang ya?🥹</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const card = document.getElementById('card');
+  card.addEventListener('click', () => {
+    card.classList.toggle('open');
+    if(card.classList.contains('open')) meledakCinta();
+  });
+
+  function meledakCinta(){
+    for(let i=0; i<40; i++){
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random()*100 + 'vw';
+      c.style.background = `hsl(${Math.random()*360}, 100%, 75%)`;
+      c.style.animationDuration = (Math.random()*3 + 2) + 's';
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(), 4000);
+    }
+  }
+
+  function kirimMaaf(){
+    meledakCinta();
+    alert('Yeyy makasih udah maafin aku ❤️❤️');
+  }
+</script>
+
+</body>
+</html>
