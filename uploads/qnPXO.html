@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Danzy Market — Marketplace Akun Game Profesional</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <!-- Link ke File CSS Eksternal -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- NAVBAR AREA -->
+  <nav class="navbar">
+    <div class="nav-logo smooth neon-text-cyan" onclick="handleLogoClick()">DANZY<span>MARKET</span></div>
+    <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+    <div class="nav-links" id="navLinks">
+      <button class="nav-btn active smooth" onclick="showPage('home', this)">🏠 Home</button>
+      <button class="nav-btn smooth" onclick="showPage('game', this)">🎮 Game</button>
+      <button class="nav-btn smooth" onclick="showPage('order', this)">📋 Cek Pesanan</button>
+      <button class="nav-btn smooth" onclick="openSupport()">💬 Support</button>
+    </div>
+  </nav>
+
+  <!-- PAGE: HOME -->
+  <div id="page-home" class="page active">
+    <div class="container">
+      <div class="hero-section">
+        <div class="hero-banner"></div>
+        <h1 class="hero-title">Beli Akun Game Premium<br><span class="neon-text-cyan">Aman & Cepat</span></h1>
+        <p class="hero-subtitle">Marketplace game profesional dengan sistem pengiriman otomatis 24 jam instan. Akun terverifikasi, jaminan anti-hackback.</p>
+        <button class="hero-cta smooth" onclick="showPage('game')">Beli Sekarang</button>
+      </div>
+
+      <h2 class="section-title">Kategori Game Populer</h2>
+      <div class="category-grid" id="homeCategories"></div>
+
+      <h2 class="section-title">Akun Populer Terbaru</h2>
+      <div class="account-grid" id="featuredAccounts"></div>
+
+      <h2 class="section-title">Testimoni Gamer</h2>
+      <div class="testi-grid">
+        <div class="testi-card glass-panel">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-text">"Gokil beli akun FF Sultan di sini langsung dikirim data loginnya lewat halaman invoice setelah bayar QRIS. Gak sampai 10 detik!"</p>
+          <div class="testi-user">@RianGamer99 — Player Free Fire</div>
+        </div>
+        <div class="testi-card glass-panel">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-text">"Awalnya ragu, pas coba beli akun ML level max mythic ternyata beneran amanah dan harganya jauh lebih murah dari marketplace sebelah."</p>
+          <div class="testi-user">@Siti_Legends — Player Mobile Legends</div>
+        </div>
+      </div>
+
+      <h2 class="section-title">FAQ Marketplace</h2>
+      <div class="faq-list">
+        <div class="faq-item glass-panel" onclick="toggleFaq(this)">
+          <div class="faq-q">Apakah data akun aman dan bergaransi? <span>▼</span></div>
+          <div class="faq-a">Ya. Semua akun yang dijual di Danzy Market wajib melalui pengecekan admin dan bergaransi penuh s/d 30 hari pasca transaksi jika terjadi kendala login.</div>
+        </div>
+        <div class="faq-item glass-panel" onclick="toggleFaq(this)">
+          <div class="faq-q">Bagaimana sistem Auto-Delivery bekerja? <span>▼</span></div>
+          <div class="faq-a">Setelah pembayaran Anda sukses dikonfirmasi oleh Payment Gateway, sistem kami otomatis mengubah status akun menjadi SOLD dan langsung menampilkan email serta password di layar Anda.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: GAME CATALOG -->
+  <div id="page-game" class="page">
+    <div class="container">
+      <h2 class="section-title" id="catalogTitle">Semua Akun Game Premium</h2>
+      <div class="account-grid" id="catalogGrid"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: ACCOUNT DETAIL -->
+  <div id="page-detail" class="page">
+    <div class="container">
+      <div class="detail-wrapper" id="detailContainer"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: CHECK ORDER -->
+  <div id="page-order" class="page">
+    <div class="container">
+      <div class="order-search-box glass-panel" style="padding: 20px;">
+        <input type="text" class="form-input" id="searchInvoiceInput" placeholder="Masukkan ID Invoice Anda (Contoh: INV-1001)">
+        <button class="hero-cta smooth" style="padding: 0 24px; margin-top: 0;" onclick="handleInvoiceSearch()">Cari</button>
+      </div>
+      <div id="orderResultArea">
+         <p style="text-align: center; color: var(--text-muted);">Silakan masukkan ID Invoice valid untuk melacak pengiriman data akun.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: ADMIN SYSTEM LOGIN -->
+  <div id="page-admin-login" class="page">
+    <div class="container" style="max-width: 450px;">
+      <div class="glass-panel" style="padding: 32px;">
+        <h2 style="font-family: 'Orbitron', sans-serif; text-align: center; margin-bottom: 24px;">ADMIN <span class="neon-text-cyan">PORTAL</span></h2>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="admUser" class="form-input" value="admin">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="admPass" class="form-input" placeholder="••••••••">
+        </div>
+        <button class="buy-now-btn" onclick="handleAdminLogin()">Masuk Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: ADMIN DASHBOARD -->
+  <div id="page-admin-dashboard" class="page">
+    <div class="container">
+      <h2 style="font-family: 'Orbitron', sans-serif; margin-bottom: 20px;">SYSTEM <span class="neon-text-orange">DASHBOARD</span></h2>
+      <div class="admin-grid-layout">
+        <div class="admin-sidebar-menu glass-panel" style="padding: 16px;">
+          <button class="admin-menu-item active smooth" id="tabBtn-add" onclick="switchAdminTab('add')">➕ Tambah Akun</button>
+          <button class="admin-menu-item smooth" id="tabBtn-manage" onclick="switchAdminTab('manage')">⚙️ Kelola Akun</button>
+          <button class="admin-menu-item smooth" id="tabBtn-tx" onclick="switchAdminTab('tx')">📊 Transaksi</button>
+          <button class="admin-menu-item smooth" style="color: red; margin-top: 40px;" onclick="showPage('home')">🚪 Keluar</button>
+        </div>
+        
+        <div class="admin-content-area glass-panel" style="padding: 24px;">
+          <!-- SECTION 1: ADD ACCOUNT -->
+          <div id="admin-sec-add" class="admin-content-section active">
+            <h3 class="sidebar-title">Tambah Produk Akun Baru</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div class="form-group">
+                <label>Pilih Game</label>
+                <select id="addGame" class="form-input">
+                  <option value="Free Fire">🔥 Free Fire</option>
+                  <option value="Mobile Legends">⚔️ Mobile Legends</option>
+                  <option value="Roblox">🎮 Roblox</option>
+                  <option value="PUBG Mobile">🎯 PUBG Mobile</option>
+                  <option value="Valorant">💎 Valorant</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Judul Listing Akun</label>
+                <input type="text" id="addTitle" class="form-input" placeholder="Contoh: FF Sultan Rare Full Set">
+              </div>
+              <div class="form-group">
+                <label>Level</label>
+                <input type="number" id="addLevel" class="form-input" placeholder="70">
+              </div>
+              <div class="form-group">
+                <label>Rank Saat Ini</label>
+                <input type="text" id="addRank" class="form-input" placeholder="Heroic / Mythic">
+              </div>
+              <div class="form-group">
+                <label>Skins Utama / Jumlah</label>
+                <input type="text" id="addSkin" class="form-input" placeholder="250 Skins Active">
+              </div>
+              <div class="form-group">
+                <label>Harga (Rupiah)</label>
+                <input type="number" id="addPrice" class="form-input" placeholder="450000">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Deskripsi Tambahan</label>
+              <textarea id="addDesc" class="form-input" style="height: 80px;" placeholder="Tulis rincian item langka atau spesifikasi login lainnya..."></textarea>
+            </div>
+            <h3 class="sidebar-title" style="color: var(--neon-purple); margin-top: 24px;">Secure Auto-Delivery Engine Data</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div class="form-group">
+                <label>Email Login</label>
+                <input type="text" id="addEmail" class="form-input" placeholder="player@gmail.com">
+              </div>
+              <div class="form-group">
+                <label>Password Login</label>
+                <input type="text" id="addPass" class="form-input" placeholder="pass123">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Catatan Login Info Tambahan</label>
+              <input type="text" id="addLoginInfo" class="form-input" placeholder="Login via Moonton. Kode Otp kirim email utama.">
+            </div>
+            <button class="buy-now-btn" style="background: linear-gradient(135deg, var(--neon-purple), #8200bc); box-shadow: none;" onclick="adminSubmitAccount()">Simpan & Publikasikan Akun</button>
+          </div>
+
+          <!-- SECTION 2: MANAGE ACCOUNTS -->
+          <div id="admin-sec-manage" class="admin-content-section">
+            <h3 class="sidebar-title">Kelola Inventori Akun</h3>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Game</th>
+                  <th>Judul</th>
+                  <th>Harga</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="adminManageTableBody"></tbody>
+            </table>
+          </div>
+
+          <!-- SECTION 3: TRANSACTIONS VIEW -->
+          <div id="admin-sec-tx" class="admin-content-section">
+            <h3 class="sidebar-title">Laporan Transaksi Marketplace</h3>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Invoice</th>
+                  <th>Pembeli</th>
+                  <th>Game/Akun ID</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Aksi Webhook Mock</th>
+                </tr>
+              </thead>
+              <tbody id="adminTxTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Link ke File JavaScript Eksternal -->
+  <script src="script.js"></script>
+</body>
+</html>
