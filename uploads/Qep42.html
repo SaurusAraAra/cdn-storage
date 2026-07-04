@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZAMMBUG</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #0d0d0d; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+
+        /* --- HALAMAN LOGIN --- */
+        .login-container { width: 100%; max-width: 380px; text-align: center; padding: 40px 20px; background: #111; border-radius: 20px; border: 1px solid #ff000088; box-shadow: 0 0 50px rgba(255, 0, 0, 0.15); }
+        .login-title { font-size: 28px; color: #ff0000; text-shadow: 0 0 20px #ff0000, 0 0 40px rgba(255, 0, 0, 0.4); margin-bottom: 30px; letter-spacing: 2px; font-weight: bold; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { font-size: 14px; color: #ccc; margin-bottom: 5px; display: block; }
+        .input-field { width: 100%; padding: 14px; background: rgba(0, 0, 0, 0.6); border: 1px solid #ff000088; border-radius: 12px; color: white; font-size: 16px; outline: none; transition: 0.3s; }
+        .input-field:focus { border-color: #ff0000; box-shadow: 0 0 20px rgba(255, 0, 0, 0.2); }
+        .btn-action { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 12px; background: #ff0000; color: #fff; font-weight: bold; font-size: 18px; cursor: pointer; box-shadow: 0 0 20px rgba(255, 0, 0, 0.3); transition: 0.2s; }
+        .btn-action:active { transform: scale(0.95); background: #cc0000; }
+        .footer-text { margin-top: 20px; font-size: 11px; color: #333; font-weight: bold; letter-spacing: 1px; }
+
+        /* --- HALAMAN UTAMA --- */
+        #mainApp { display: none; width: 100%; max-width: 380px; background: #0f0f15; padding: 20px 20px 85px 20px; border-radius: 20px; border: 1px solid #ff000066; box-shadow: 0 0 30px rgba(255, 0, 0, 0.15); position: relative; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .header-top h2 { font-size: 22px; color: #fff; }
+        .header-top span { color: #ff0000; text-shadow: 0 0 10px rgba(255,0,0,0.3); }
+        .header-icons { color: #aaa; display: flex; gap: 12px; font-size: 18px; }
+        .profile-card { display: flex; align-items: center; padding: 15px; background: rgba(255, 255, 255, 0.03); border: 1px solid #ff000066; border-radius: 18px; margin-bottom: 12px; box-shadow: inset 0 0 15px rgba(255, 0, 0, 0.05); }
+        .avatar { width: 60px; height: 60px; border-radius: 50%; border: 2px solid #ff0000; background: #222; margin-right: 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-info h3 { font-size: 20px; color: #fff; margin-bottom: 4px; }
+        .role-badge { display: inline-block; background: rgba(255, 0, 0, 0.15); border: 1px solid #ff0000; border-radius: 20px; padding: 4px 12px; font-size: 11px; color: #ff9999; }
+        .banner-placeholder { width: 100%; height: 160px; border-radius: 15px; border: 1px solid #ff000055; margin-bottom: 15px; overflow: hidden; position: relative; background: linear-gradient(135deg, #2a2a2a, #050505); }
+        .banner-placeholder img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
+        .play-icon { position: absolute; top: 50%; left: 15px; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.6); background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: white; }
+        .bug-actions { display: flex; gap: 10px; margin-bottom: 18px; }
+        .btn-mode { flex: 1; padding: 12px 0; background: transparent; border: 1px solid #555; border-radius: 15px; color: #888; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-mode.active { border-color: #ff0000; color: #fff; background: rgba(255, 0, 0, 0.15); box-shadow: 0 0 15px rgba(255, 0, 0, 0.1); }
+        .btn-mode:active { background: rgba(255, 0, 0, 0.3); }
+        .label-target { font-size: 14px; color: #ccc; margin-bottom: 6px; display: block; letter-spacing: 1px; }
+        .input-target { width: 100%; padding: 14px; background: #050505; border: 1px solid #ff000088; border-radius: 12px; color: #fff; margin-bottom: 15px; outline: none; }
+        .input-target:focus { border-color: #ff0000; box-shadow: 0 0 15px rgba(255,0,0,0.1); }
+        select.input-target { appearance: none; }
+        .btn-send { width: 100%; padding: 15px; border: none; border-radius: 12px; background: #ff0000; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.2); cursor: pointer; transition: 0.2s; }
+        .btn-send:active { transform: scale(0.96); background: #cc0000; }
+        .status-box { margin-top: 12px; padding: 12px; border-radius: 12px; text-align: center; background: rgba(255, 255, 255, 0.03); border: 1px dashed #555; min-height: 40px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .status-ok { color: #00ffcc; border-color: #00ffcc66; text-shadow: 0 0 10px rgba(0, 255, 204, 0.3); }
+        .status-loading { color: #ffaa00; border-color: #ffaa0066; }
+        .bottom-nav { position: absolute; bottom: 10px; left: 20px; right: 20px; background: #14141a; display: flex; justify-content: space-around; padding: 10px 0; border-radius: 20px; border: 1px solid #ff000088; box-shadow: 0 -5px 20px rgba(255, 0, 0, 0.15), 0 5px 20px rgba(255, 0, 0, 0.15); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #555; font-size: 11px; cursor: pointer; transition: 0.2s; }
+        .nav-item.active { color: #ff0000; text-shadow: 0 0 10px #ff000055; }
+        .nav-item:active { transform: scale(0.9); }
+        .nav-item span { font-size: 16px; margin-bottom: 2px; }
+    </style>
+</head>
+<body>
+    <!-- HALAMAN LOGIN -->
+    <div id="loginPage" class="login-container">
+        <h1 class="login-title">ZAMMBUG</h1>
+        <div class="input-group">
+            <label>USERNAME</label>
+            <input type="text" id="username" class="input-field" placeholder="Masukkan Username">
+        </div>
+        <div class="input-group">
+            <label>PASSWORD</label>
+            <input type="password" id="password" class="input-field" placeholder="Masukkan Password">
+        </div>
+        <button class="btn-action" onclick="handleLogin()">LOGIN</button>
+        <!-- Teks footer diganti DEVOFLOFER BY ZAMM OFFICE -->
+        <p class="footer-text">*DEVOFLOFER BY ZAMM OFFICE</p>
+    </div>
+
+    <!-- HALAMAN DASHBOARD -->
+    <div id="mainApp">
+        <!-- Header Atas -->
+        <div class="header-top">
+            <h2>Welcome, <span>ZAMM</span></h2>
+            <div class="header-icons"><span>🎧</span><span>👤</span></div>
+        </div>
+
+        <!-- Kartu Profil (Role ADMIN) -->
+        <div class="profile-card">
+            <div class="avatar"><img src="https://ui-avatars.com/api/?name=ZAMM&background=ff0000&color=fff&size=128" alt="User"></div>
+            <div class="profile-info">
+                <h3>ZAMM</h3>
+                <!-- Diubah menjadi ADMIN -->
+                <div class="role-badge">Role ADMIN · Exp 2026-05-28</div>
+            </div>
+        </div>
+
+        <!-- Banner Anime -->
+        <div class="banner-placeholder">
+            <img src="https://picsum.photos/seed/anime/400/200" alt="Anime Banner">
+            <div class="play-icon">▶</div>
+        </div>
+
+        <!-- Pilihan Mode -->
+        <div class="bug-actions">
+            <button class="btn-mode active" id="btnBugNomor" onclick="toggleBugMode('nomor')">🔫 BUG NOMOR</button>
+            <button class="btn-mode" id="btnBugGroup" onclick="toggleBugMode('grup')">👥 BUG GROUP</button>
+        </div>
+
+        <!-- Area Input & Send Bug -->
+        <div>
+            <label class="label-target" id="labelTarget">NOMOR TARGET</label>
+            <input type="tel" id="targetInput" class="input-target" placeholder="+62xxxxxxxxxx">
+            
+            <label class="label-target">PILIH BUG</label>
+            <select id="bugType" class="input-target">
+                <option value="Crash">Crash</option>
+                <option value="Forclose">Forclose</option>
+                <option value="Kenon">Kenon</option>
+            </select>
+
+            <button class="btn-send" onclick="sendBug()">SEND BUG</button>
+            
+            <div id="statusBox" class="status-box"><span style="color:#555;">Status menunggu...</span></div>
+        </div>
+
+        <!-- Bottom Navigation (Klik Chat membuka Link WA) -->
+        <div class="bottom-nav">
+            <div class="nav-item active"><span>🔥</span><span>Home</span></div>
+            <!-- Tambahkan onclick untuk membuka link WA -->
+            <div class="nav-item" onclick="window.open('https://whatsapp.com/channel/0029Vb8c13OHLHQgui0zWu3Q', '_blank')"><span>💬</span><span>Chat</span></div>
+            <div class="nav-item"><span>🔔</span><span>Info</span></div>
+            <div class="nav-item"><span>⚙️</span><span>Tools</span></div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // --- LOGIN ---
+        function handleLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            if(user === 'ZAMM' && pass === 'AJA') {
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+            } else { alert('Login Gagal!\nPastikan Username: ZAMM dan Password: AJA'); }
+        }
+        document.getElementById('password').addEventListener('keypress', function(e) { if (e.key === 'Enter') handleLogin(); });
+
+        // --- TOGGLE MODE NOMOR / GRUP ---
+        function toggleBugMode(mode) {
+            const btnNomor = document.getElementById('btnBugNomor');
+            const btnGrup = document.getElementById('btnBugGroup');
+            const labelTarget = document.getElementById('labelTarget');
+            const inputTarget = document.getElementById('targetInput');
+            const bugSelect = document.getElementById('bugType');
+
+            if (mode === 'nomor') {
+                btnNomor.classList.add('active'); btnGrup.classList.remove('active');
+                labelTarget.innerText = 'NOMOR TARGET'; inputTarget.placeholder = '+62xxxxxxxxxx'; inputTarget.type = 'tel'; inputTarget.value = '';
+                bugSelect.innerHTML = `<option value="Crash">Crash</option><option value="Forclose">Forclose</option><option value="Kenon">Kenon</option>`;
+                resetStatus();
+            } else {
+                btnGrup.classList.add('active'); btnNomor.classList.remove('active');
+                labelTarget.innerText = 'LINK GROUP TARGET'; inputTarget.placeholder = 'chat.whatsapp.com/xxxxx'; inputTarget.type = 'text'; inputTarget.value = '';
+                bugSelect.innerHTML = `<option value="Crash Grup">Crash Grup</option><option value="Forclose Grup">Forclose Grup</option><option value="Kenon Grup">Kenon Grup</option>`;
+                resetStatus();
+            }
+        }
+
+        function resetStatus() {
+            const statusBox = document.getElementById('statusBox');
+            statusBox.innerHTML = '<span style="color:#555;">Status menunggu...</span>';
+            statusBox.className = 'status-box';
+        }
+
+        // --- SIMULASI KIRIM BUG ---
+        function sendBug() {
+            const target = document.getElementById('targetInput').value;
+            const jenisBug = document.getElementById('bugType').value;
+            const statusBox = document.getElementById('statusBox');
+            if(!target || target.trim() === '') { alert('Harap masukkan Nomor / Link Grup Target terlebih dahulu!'); return; }
+            statusBox.innerHTML = `<span class="status-loading">⏳ Mengirimkan ${jenisBug} ke ${target} ...</span>`;
+            statusBox.className = 'status-box';
+            setTimeout(() => {
+                statusBox.innerHTML = `<span class="status-ok">✅ ${jenisBug} berhasil di kirim ke ${target}!</span>`;
+                statusBox.className = 'status-box status-ok';
+                if (navigator.vibrate) navigator.vibrate(200);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
