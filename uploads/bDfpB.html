@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>DLMS Virtual</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+:root{
+  --bg:#0a0e1a;
+  --card:#111827;
+  --card-hover:#161f2e;
+  --border:#1f2937;
+  --border-hover:#374151;
+  --accent:#10b981;
+  --accent-dim:#059669;
+  --text:#f3f4f6;
+  --text2:#9ca3af;
+  --muted:#6b7280;
+  --track:#1f2937;
+  --danger:#ef4444;
+  --warn:#f59e0b;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body{-webkit-font-smoothing:antialiased}
+
+/* Header */
+.header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:36px;height:36px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo h1{font-size:17px;font-weight:800;color:var(--text);letter-spacing:-0.3px}
+.status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);font-weight:500}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:all 0.3s}
+.status-dot.active{background:var(--accent);box-shadow:0 0 6px var(--accent)}
+
+.container{max-width:600px;margin:0 auto;padding:14px 12px}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;transition:border-color 0.2s}
+.card:active{border-color:var(--border-hover)}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.card-title{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px}
+.badge{font-size:9px;padding:3px 10px;border-radius:12px;background:rgba(16,185,129,0.1);color:var(--accent);border:1px solid rgba(16,185,129,0.15);font-weight:600}
+.badge.off{background:rgba(239,68,68,0.08);color:var(--danger);border-color:rgba(239,68,68,0.12)}
+
+/* Spectrum */
+.spectrum{background:var(--bg);border-radius:10px;padding:12px;height:120px;position:relative;border:1px solid var(--border);overflow:hidden}
+.spectrum canvas{width:100%;height:100%;display:block}
+.spectrum-warning{position:absolute;top:8px;right:10px;font-size:9px;color:var(--danger);opacity:0;transition:opacity 0.2s;font-weight:700;background:rgba(0,0,0,0.6);padding:2px 6px;border-radius:4px}
+.spectrum-warning.show{opacity:1}
+
+/* Volume Section */
+.vol-section{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.vol-ch{background:var(--bg);border-radius:10px;padding:12px;border:1px solid var(--border)}
+.vol-label{display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:11px;font-weight:600}
+.vol-label .ch{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+.ch-l{background:rgba(16,185,129,0.15);color:var(--accent)}
+.ch-r{background:rgba(245,158,11,0.15);color:var(--warn)}
+.vol-meter{display:flex;align-items:center;gap:8px}
+.meter{flex:1;height:5px;background:var(--track);border-radius:3px;overflow:hidden}
+.meter-fill{height:100%;border-radius:3px;transition:width 0.08s linear}
+.meter-fill.l{background:var(--accent)}
+.meter-fill.r{background:var(--warn)}
+.clip{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:all 0.1s;flex-shrink:0}
+.clip.active{background:var(--danger);box-shadow:0 0 6px var(--danger)}
+.vol-val{font-size:11px;font-weight:600;min-width:50px;text-align:right;color:var(--text2);font-variant-numeric:tabular-nums}
+.vol-slider{margin-top:8px}
+
+/* Player */
+.player{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.file-wrap{flex:1;min-width:140px}
+.file-wrap input{display:none}
+.file-label{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--bg);border:1px dashed var(--border);border-radius:6px;cursor:pointer;transition:all 0.2s;font-size:11px;color:var(--text2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.file-label:active{border-color:var(--accent);color:var(--accent)}
+.file-label.has-file{border-style:solid;border-color:var(--accent);background:rgba(16,185,129,0.08);color:var(--accent)}
+.pctrl{display:flex;gap:6px}
+.btn{padding:8px 16px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all 0.15s;font-family:'Inter',sans-serif;outline:none}
+.btn-grn{background:var(--accent);color:#000}
+.btn-grn:active{background:var(--accent-dim);transform:scale(0.97)}
+.btn-red{background:var(--danger);color:#fff}
+.btn-red:active{transform:scale(0.97)}
+.btn-blu{background:#3b82f6;color:#fff}
+.btn-blu:active{transform:scale(0.97)}
+.btn:disabled{opacity:0.3;cursor:not-allowed;transform:none}
+.speed{display:flex;align-items:center;gap:6px;background:var(--bg);padding:6px 10px;border-radius:6px;font-size:10px;border:1px solid var(--border)}
+.speed label{color:var(--muted);font-size:9px;font-weight:600}
+.seek{width:100%;margin-top:10px}
+.seek-time{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px;font-variant-numeric:tabular-nums}
+
+/* Preset */
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.preset-grid .full{grid-column:span 2}
+.select-wrap{position:relative}
+.select-wrap select{width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;cursor:pointer;appearance:none;font-family:'Inter',sans-serif}
+.select-wrap::after{content:'▼';position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:7px;color:var(--muted);pointer-events:none}
+.preset-grid input{width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px}
+.preset-grid input::placeholder{color:var(--muted)}
+
+/* Channel Cards */
+.ch-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;position:relative}
+.ch-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;border-radius:14px 0 0 14px}
+.ch1::before{background:var(--accent)}
+.ch2::before{background:#8b5cf6}
+.ch-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-left:4px}
+.ch-name{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.ch-num{width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800}
+.ch1 .ch-num{background:rgba(16,185,129,0.15);color:var(--accent)}
+.ch2 .ch-num{background:rgba(139,92,246,0.15);color:#8b5cf6}
+.mute{padding:6px 12px;border-radius:5px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-size:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all 0.15s;outline:none}
+.mute:active{border-color:var(--danger);color:var(--danger)}
+.mute.on{background:var(--danger);color:#fff;border-color:var(--danger)}
+
+.sec{margin-bottom:14px;padding-left:4px}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sec-title{font-size:9px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px}
+
+/* Crossover */
+.xo-ctrl{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.xo-ctrl label{display:block;font-size:8px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.xo-ctrl select{width:100%;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:10px;cursor:pointer;appearance:none;font-family:'Inter',sans-serif}
+
+/* Bands */
+.bands{display:flex;flex-direction:column;gap:10px}
+.band{display:grid;grid-template-columns:40px 1fr 60px 30px;align-items:center;gap:8px;padding:8px;background:var(--bg);border-radius:6px;border:1px solid var(--border)}
+.band-lbl{font-size:9px;font-weight:700}
+.band-lbl.low{color:#3b82f6}
+.band-lbl.mid{color:var(--warn)}
+.band-lbl.high{color:#ec4899}
+.band-sliders{display:flex;flex-direction:column;gap:2px}
+.band-sliders .lbl{display:flex;justify-content:space-between;font-size:8px;color:var(--muted)}
+.band-val{font-size:10px;font-weight:600;text-align:right;color:var(--text2);font-variant-numeric:tabular-nums}
+.tgl{width:28px;height:16px;border-radius:8px;background:var(--track);position:relative;cursor:pointer;transition:all 0.15s;flex-shrink:0}
+.tgl::after{content:'';position:absolute;width:12px;height:12px;border-radius:50%;background:var(--muted);top:2px;left:2px;transition:all 0.15s}
+.tgl.on{background:rgba(16,185,129,0.3)}
+.tgl.on::after{background:var(--accent);left:14px}
+
+/* EQ */
+.eq-bands{display:flex;flex-direction:column;gap:12px}
+.eq-band{background:var(--bg);border-radius:8px;padding:12px;border:1px solid var(--border)}
+.eq-band.on{border-color:rgba(16,185,129,0.3)}
+.eq-band.off{opacity:0.5}
+.eq-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.eq-info{display:flex;align-items:center;gap:6px}
+.eq-num{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+.eq-band.on .eq-num{background:rgba(16,185,129,0.15);color:var(--accent)}
+.eq-band.off .eq-num{background:rgba(107,114,128,0.15);color:var(--muted)}
+.eq-name{font-size:10px;font-weight:600}
+.eq-freq{font-size:10px;font-weight:600;color:var(--accent)}
+.eq-gain{font-size:10px;font-weight:600}
+.eq-gain.pos{color:var(--accent)}
+.eq-gain.neg{color:var(--danger)}
+.eq-tgl{width:32px;height:18px;border-radius:9px;background:var(--track);position:relative;cursor:pointer;transition:all 0.15s;flex-shrink:0}
+.eq-tgl::after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:var(--muted);top:2px;left:2px;transition:all 0.15s}
+.eq-tgl.on{background:rgba(16,185,129,0.3)}
+.eq-tgl.on::after{background:var(--accent);left:16px}
+.eq-sliders{display:flex;flex-direction:column;gap:6px}
+.eq-row{display:flex;align-items:center;gap:8px}
+.eq-row label{font-size:8px;color:var(--muted);min-width:16px}
+.eq-row .val{font-size:9px;color:var(--text2);min-width:30px;text-align:right}
+
+/* Limiter */
+.lim-ctrl{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lim-grp{display:flex;flex-direction:column;gap:5px}
+.lim-grp label{font-size:9px;color:var(--muted)}
+.lim-val{font-size:11px;font-weight:600;color:var(--accent)}
+
+/* Output */
+.out{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+.out-grp{display:flex;flex-direction:column;gap:5px}
+.out-grp label{font-size:9px;color:var(--muted)}
+.out-val{font-size:12px;font-weight:700}
+.phase{padding:7px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text2);font-size:10px;font-weight:600;cursor:pointer;transition:all 0.15s;outline:none}
+.phase:active{border-color:#8b5cf6;color:#8b5cf6}
+.phase.on{background:#8b5cf6;color:#fff;border-color:#8b5cf6}
+
+/* Range Inputs */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;background:var(--track);border-radius:2px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 4px rgba(16,185,129,0.3);transition:transform 0.1s}
+input[type=range]::-webkit-slider-thumb:active{transform:scale(1.2)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;border:none}
+
+.footer{text-align:center;padding:20px;color:var(--muted);font-size:9px}
+.footer span{color:var(--accent);font-weight:700}
+
+/* Upload Progress */
+.upload-progress{position:fixed;top:0;left:0;height:2px;background:var(--accent);z-index:1000;transition:width 0.2s;width:0%}
+
+/* Mobile */
+@media(max-width:480px){
+.vol-section,.preset-grid,.xo-ctrl,.lim-ctrl,.out{grid-template-columns:1fr}
+.full{grid-column:span 1}
+.band{grid-template-columns:40px 1fr}
+.band-val,.tgl{display:none}
+.header{padding:12px 14px}
+.container{padding:12px 10px}
+.player{flex-direction:column;align-items:stretch}
+.pctrl{justify-content:center}
+}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="upload-progress" id="uploadProgress"></div>
+<header class="header">
+<div class="logo">
+<div class="logo-icon">🎧</div>
+<h1>DLMS Virtual</h1>
+</div>
+<div class="status">
+<span class="status-dot" id="statusDot"></span>
+<span id="statusText">Ready</span>
+</div>
+</header>
+<div class="container">
+
+<!-- SPECTRUM -->
+<div class="card">
+<div class="card-head">
+<div class="card-title">📊 Spectrum</div>
+<div class="badge">0 Hz – 20 kHz</div>
+</div>
+<div class="spectrum">
+<canvas id="spectrumCanvas"></canvas>
+<div class="spectrum-warning" id="clipWarning">⚠️ Clipping</div>
+</div>
+<div class="vol-section">
+<div class="vol-ch">
+<div class="vol-label"><span class="ch ch-l">L</span>Volume L</div>
+<div class="vol-meter">
+<div class="meter"><div class="meter-fill l" id="meterL" style="width:0%"></div></div>
+<div class="clip" id="clipL"></div>
+<div class="vol-val" id="volLVal">0.0 dB</div>
+</div>
+<div class="vol-slider"><input type="range" min="-60" max="12" value="0" step="0.1" id="volL" oninput="updateVol('L',this.value)"></div>
+</div>
+<div class="vol-ch">
+<div class="vol-label"><span class="ch ch-r">R</span>Volume R</div>
+<div class="vol-meter">
+<div class="meter"><div class="meter-fill r" id="meterR" style="width:0%"></div></div>
+<div class="clip" id="clipR"></div>
+<div class="vol-val" id="volRVal">0.0 dB</div>
+</div>
+<div class="vol-slider"><input type="range" min="-60" max="12" value="0" step="0.1" id="volR" oninput="updateVol('R',this.value)"></div>
+</div>
+</div>
+</div>
+
+<!-- PLAYER -->
+<div class="card">
+<div class="card-head">
+<div class="card-title">🎵 Player</div>
+<div class="badge" id="speedBadge">1.00x</div>
+</div>
+<div class="player">
+<div class="file-wrap">
+<input type="file" id="audioFile" accept="audio/*">
+<label for="audioFile" class="file-label" id="fileLabel">📁 <span id="fileName">Pilih file audio...</span></label>
+</div>
+<div class="pctrl">
+<button class="btn btn-grn" id="playBtn" onclick="togglePlay()" disabled>▶ Play</button>
+<button class="btn btn-red" onclick="resetPlayer()">↺ Reset</button>
+</div>
+<div class="speed">
+<label>Speed</label>
+<input type="range" min="0.5" max="2" value="1" step="0.05" style="width:60px" id="speedSlider" oninput="updateSpeed(this.value)">
+</div>
+</div>
+<div class="seek">
+<div class="seek-time"><span id="currentTime">00:00</span><span id="totalTime">00:00</span></div>
+<input type="range" min="0" max="100" value="0" id="seekSlider" oninput="seekAudio(this.value)">
+</div>
+</div>
+
+<!-- PRESET -->
+<div class="card">
+<div class="card-head"><div class="card-title">💾 Preset</div></div>
+<div class="preset-grid">
+<div class="full">
+<div class="select-wrap">
+<select id="presetSelect">
+<option>— pilih preset —</option>
+<option>Default Flat</option>
+<option>Bass Boost</option>
+<option>Vocal Clear</option>
+<option>Club Mode</option>
+<option>Live PA</option>
+</select>
+</div>
+</div>
+<button class="btn btn-blu" onclick="loadPreset()">⬆ Muat</button>
+<button class="btn btn-red" onclick="deletePreset()">🗑 Hapus</button>
+<div class="full"><input type="text" placeholder="Nama Preset Baru" id="newPresetName"></div>
+<button class="btn btn-grn full" onclick="savePreset()">+ Simpan</button>
+</div>
+</div>
+
+<!-- CH1 -->
+<div class="ch-card ch1">
+<div class="ch-head">
+<div class="ch-name"><span class="ch-num">CH1</span>LOW (Bass)</div>
+<button class="mute" id="muteCh1" onclick="toggleMute('ch1')">🔇 MUTE</button>
+</div>
+<div class="sec">
+<div class="sec-head"><div class="sec-title">1. Input Routing</div></div>
+<div class="select-wrap">
+<select id="ch1Route" onchange="updateRoute('ch1',this.value)">
+<option value="mono" selected>L+R (Mono Sum)</option>
+<option value="left">Left Only</option>
+<option value="right">Right Only</option>
+<option value="stereo">Stereo</option>
+</select>
+</div>
+</div>
+<div class="sec">
+<div class="sec-head">
+<div class="sec-title">2. Crossover</div>
+<div class="badge" id="xoCh1Badge">Linkwitz-Riley</div>
+</div>
+<div class="xo-ctrl">
+<div><label>Mode</label><select id="ch1XoMode" onchange="updateXo('ch1','mode',this.value)"><option value="off" selected>Off</option><option value="on">On</option></select></div>
+<div><label>Type</label><select id="ch1XoType" onchange="updateXo('ch1','type',this.value)"><option value="lr" selected>Linkwitz-Riley</option><option value="bw">Butterworth</option><option value="bs">Bessel</option></select></div>
+<div><label>Slope</label><select id="ch1XoSlope" onchange="updateXo('ch1','slope',this.value)"><option value="24" selected>24 dB</option><option value="12">12 dB</option><option value="18">18 dB</option><option value="36">36 dB</option><option value="48">48 dB</option></select></div>
+</div>
+<div class="bands">
+<div class="band">
+<span class="band-lbl low">Low</span>
+<div class="band-sliders">
+<div class="lbl"><span>Freq</span><span id="ch1LowFreqVal">80 Hz</span></div>
+<input type="range" min="20" max="500" value="80" id="ch1LowFreq" oninput="updateBandFreq('ch1','low',this.value)">
+<div class="lbl"><span>Gain</span><span id="ch1LowGainVal">0 dB</span></div>
+<input type="range" min="-15" max="15" value="0" step="0.1" id="ch1LowGain" oninput="updateBandGain('ch1','low',this.value)">
+</div>
+<div class="band-val" id="ch1LowGainDisp">0 dB</div>
+<div class="tgl on" id="ch1LowTgl" onclick="toggleBand(this,'ch1','low')"></div>
+</div>
+<div class="band">
+<span class="band-lbl mid">Mid</span>
+<div class="band-sliders">
+<div class="lbl"><span>Freq</span><span id="ch1MidFreqVal">800 Hz</span></div>
+<input type="range" min="200" max="5000" value="800" id="ch1MidFreq" oninput="updateBandFreq('ch1','mid',this.value)">
+<div class="lbl"><span>Gain</span><span id="ch1MidGainVal">0 dB</span></div>
+<input type="range" min="-15" max="15" value="0" step="0.1" id="ch1MidGain" oninput="updateBandGain('ch1','mid',this.value)">
+</div>
+<div class="band-val" id="ch1MidGainDisp">0 dB</div>
+<div class="tgl on" id="ch1MidTgl" onclick="toggleBand(this,'ch1','mid')"></div>
+</div>
+<div class="band">
+<span class="band-lbl high">High</span>
+<div class="band-sliders">
+<div class="lbl"><span>Freq</span><span id="ch1HighFreqVal">4000 Hz</span></div>
+<input type="range" min="1000" max="20000" value="4000" id="ch1HighFreq" oninput="updateBandFreq('ch1','high',this.value)">
+<div class="lbl"><span>Gain</span><span id="ch1HighGainVal">0 dB</span></div>
+<input type="range" min="-15" max="15" value="0" step="0.1" id="ch1HighGain" oninput="updateBandGain('ch1','high',this.value)">
+</div>
+<div class="band-val" id="ch1HighGainDisp">0 dB</div>
+<div class="tgl on" id="ch1HighTgl" onclick="toggleBand(this,'ch1','high')"></div>
+</div>
+</div>
+</div>
+<div class="sec">
+<div class="sec-head">
+<div class="sec-title">3. Parametric EQ</div>
+<div class="badge" id="eqCh1Badge">EQ: ON</div>
+</div>
+<div class="eq-bands">
+<div class="eq-band on" id="ch1Eq1Band">
+<div class="eq-head">
+<div class="eq-info"><span class="eq-num">1</span><span class="eq-name">Sub</span></div>
+<div style="display:flex;align-items:center;gap:8px">
+<span class="eq-freq" id="ch1Eq1Freq">80 Hz</span>
+<span class="eq-gain pos" id="ch1Eq1Gain">+0 dB</span>
+<div class="eq-tgl on" id="ch1Eq1Tgl" onclick="toggleEq(this,'ch1',1)"></div>
+</div>
+</div>
+<div class="eq-sliders">
+<div class="eq-row"><label>Freq</label><input type="range" min="20" max="200" value="80" id="ch1Eq1FreqIn" oninput="updateEq('ch1',1,'freq',this.value)"><span class="val" id="ch1Eq1FreqDisp">80 Hz</span></div>
+<div class="eq-row"><label>Gain</label><input type="range" min="-15" max="15" value="0" step="0.1" id="ch1Eq1GainIn" oninput="updateEq('ch1',1,'gain',this.value)"><span class="val" id="ch1Eq1GainDisp">0 dB</span></div>
+<div class="eq-row"><label>Q</label><input type="range" min="0.1" max="10" value="1" step="0.1" id="ch1Eq1QIn" oninput="updateEq('ch1',1,'q',this.value)"><span class="val" id="ch1Eq1QDisp">1.0</span></div>
+</div>
+</div>
+<div class="eq-band on" id="ch1Eq2Band">
+<div class="eq-head">
+<div class="eq-info"><span class="eq-num">2</span><span class="eq-name">L-Mid</span></div>
+<div style="display:flex;align-items:center;gap:8px">
+<span class="eq-freq" id="ch1Eq2Freq">200 Hz</span>
+<span class="eq-gain pos" id="ch1Eq2Gain">+0 dB</span>
+<div class="eq-tgl on" id="ch1Eq2Tgl" onclick="toggleEq(this,'ch1',2)"></div>
+</div>
+</div>
+<div class="eq-sliders">
+<div class="eq-row"><label>Freq</label><input type="range" min="50" max="500" value="200" id="ch1Eq2FreqIn" oninput="updateEq('ch1',2,'freq',this.value)"><span class="val" id="ch1Eq2FreqDisp">200 Hz</span></div>
+<div class="eq-row"><label>Gain</label><input type="range" min="-15" max="15" value="0" step="0.1" id="ch1Eq2GainIn" oninput="updateEq('ch1',2,'gain',this.value)"><span class="val" id="ch1Eq2GainDisp">0 dB</span></div>
+<div class="eq-row"><label>Q</label><input type="range" min="0.1" max="10" value="1" step="0.1" id="ch1Eq2QIn" oninput="updateEq('ch1',2,'q',this.value)"><span class="val" id="ch1Eq2QDisp">1.0</span></div>
+</div>
+</div>
+<div class="eq-band on" id="ch1Eq3Band">
+<div class="eq-head">
+<div class="eq-info"><span class="eq-num">3</span><span class="eq-name">Mid</span></div>
+<div style="display:flex;align-items:center;gap:8px">
+<span class="eq-freq" id="ch1Eq3Freq">500 Hz</span>
+<span class="eq-gain pos" id="ch1Eq3Gain">+0 dB</span>
+<div class="eq-tgl on" id="ch1Eq3Tgl" onclick="toggleEq(this,'ch1',3)"></div>
+</div>
+</div>
+<div class="eq-sliders">
+<div class="eq-row"><label>Freq</label><input type="range" min="200" max="2000" value="500" id="ch1Eq3FreqIn" oninput="updateEq('ch1',3,'freq',this.value)"><span class="val" id="ch1Eq3FreqDisp">500 Hz</span></div>
+<div class="eq-row"><label>Gain</label><input type="range" min="-15" max="15" value="0" step="0.1" id="ch1Eq3GainIn" oninput="updateEq('ch1',3,'gain',this.value)"><span class="val" id="ch1Eq3GainDisp">0 dB</span></div>
+<div class="eq-row"><label>Q</label><input type="range" min="0.1" max="10" value="1" step="0.1" id="ch1Eq3QIn" oninput="updateEq('ch1',3,'q',this.value)"><span class="val" id="ch1Eq3QDisp">1.0</span></div>
+</div>
+</div>
+<div class="eq-band off" id="ch1Eq4Band">
+<div class="eq-head">
+<div class="eq-info"><span class="eq-num">4</span><span class="eq-name">H-Mid</span></div>
+<div style="display:flex;align-items:center;gap:8px">
+<span class="eq-freq" id="ch1Eq4Freq">2000 Hz</span>
+<span class="eq-gain" id="ch1Eq4Gain">0 dB</span>
+<div class="eq-tgl" id="ch1Eq4Tgl" onclick="toggleEq(this,'ch1',4)"></div>
+</div>
+</div>
+<div class="eq-sliders">
+<div class="eq-row"><label>Freq</label><input type="range" min="1000" max="8000" value="2000" id="ch1Eq4FreqIn" oninput="updateEq('ch1',4,'freq',this.value)"><span class="val" id="ch1Eq4FreqDisp">2000 Hz</span></div>
+<div class="eq-row"><label>Gain</label><input type="range" min="-15" max="15" value="0" step="0.1" id="ch1Eq4GainIn" oninput="updateEq('ch1',4,'gain',this.value)"><span class="val" id="ch1Eq4GainDisp">0 dB</span></div>
+<div class="eq-row"><label>Q</label><input type="range" min="0.1" max="10" value="1" step="0.1" id="ch1Eq4QIn" oninput="updateEq('ch1',4,'q',this.value)"><span class="val" id="ch1Eq4QDisp">1.0</span></div>
+</div>
+</div>
+<div class="eq-band off" id="ch1Eq5Band">
+<div class="eq-head">
+<div class="eq-info"><span class="eq-num">5</span><span class="eq-name">High</span></div>
+<div style="display:flex;align-items:center;gap:8px">
+<span class="eq-freq" id="ch1Eq5Freq">8000 Hz</span>
+<span class="eq-gain" id="ch1Eq5Gain">0 dB</span>
+<div class="eq-tgl" id="ch1Eq5Tgl" onclick="toggleEq(this,'ch1',5)"></div>
+</div>
+</div>
+<div class="eq-sliders">
+<div class="eq-row"><label>Freq</label><input type="range" min="4000" max="20000" value="8000" id="ch1Eq5FreqIn" oninput="updateEq('ch1',5,'freq',this.value)"><span class="val" id="ch1Eq5FreqDisp">8000 Hz</span></div>
+<div class="eq-row"><label>Gain</label><input type="range" min="-15" max="15" value="0" step="0.1" id="ch1Eq5GainIn" oninput="updateEq('ch1',5,'gain',this.value)"><span class="val" id="ch1Eq5GainDisp">0 dB</span></div>
+<div class="eq-row"><label>Q</label><input type="range" min="0.1" max="10" value="1" step="0.1" id="ch1Eq5QIn" oninput="updateEq('ch1',5,'q',this.value)"><span class="val" id="ch1Eq5QDisp">1.0</span></div>
+</div>
+</div>
+</div>
+</div>
+<div class="sec">
+<div class="sec-head">
+<div class="sec-title">4. Limiter</div>
+<div class="badge off" id="limitCh1Badge">BYPASS</div>
+</div>
+<div class="lim-ctrl">
+<div class="lim-grp">
+<label>Threshold</label>
+<input type="range" min="-20" max="0" value="0" step="0.1" id="ch1LimThreshIn" oninput="updateLimiter('ch1','threshold',this.value)">
+<span class="lim-val" id="ch1LimitThresh">0 dB</span>
+</div>
+<div class="lim-grp">
+<label>Release</label>
+<input type="range" min="0.01" max="2" value="0.2" step="0.01" id="ch1LimRelIn" oninput="updateLimiter('ch1','release',this.value)">
+<span class="lim-val" id="ch1LimitRelease">0.2 s</span>
+</div>
+</div>
+</div>
+<div class="sec">
+<div class="sec-head"><div class="sec-title">Output</div></div>
+<div class="out">
+<div class="out-grp" style="grid-column:span 2">
+<label>Master Volume</label>
+<input type="range" min="-30" max="12" value="0" step="0.1" id="ch1MasterIn" oninput="updateMasterVol('ch1',this.value)">
+<span class="out-val" id="ch1MasterVol" style="color:var(--accent)">0 dB</span>
+</div>
+<div class="out-grp">
+<label>Pan</label>
+<div class="select-wrap">
+<select id="ch1Pan" onchange="updatePan('ch1',this.value)">
+<option value="hardleft" selected>Hard Left</option>
+<option value="left">Left</option>
+<option value="center">Center</option>
+<option value="right">Right</option>
+<option value="hardright">Hard Right</option>
+</select>
+</div>
+</div>
+<div class="out-grp">
+<label>Delay</label>
+<input type="range" min="0" max="50" value="0" step="0.1" id="ch1DelayIn" oninput="updateDelay('ch1',this.value)">
+<span class="out-val" id="ch1Delay">0 ms</span>
+</div>
+<div class="out-grp" style="grid-column:span 2;display:flex;justify-content:flex-end">
+<button class="phase" id="ch1Phase" onclick="togglePhase('ch1')">Phase 180°</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- CH2 -->
+<div class="ch-card ch2">
+<div class="ch-head">
+<div class="ch-name"><span class="ch-num">CH2</span>HIGH (Mid/Top)</div>
+<button class="mute" id="muteCh2" onclick="toggleMute('ch2')">🔇 MUTE</button>
+</div>
+<div class="sec">
+<div class="sec-head"><div class="sec-title">1. Input Routing</div></div>
+<div class="select-wrap">
+<select id="ch2Route" onchange="updateRoute('ch2',this.value)">
+<option value="mono" selected>L+R (Mono Sum)</option>
+<option value="left">Left Only</option>
+<option value="right">Right Only</option>
+<option value="stereo">Stereo</option>
+</select>
+</div>
+</div>
+<div class="sec">
+<div class="sec-head">
+<div class="sec-title">2. Crossover</div>
+<div class="badge" id="xoCh2Badge">Linkwitz-Riley</div>
+</div>
+<div class="xo-ctrl">
+<div><label>Mode</label><select id="ch2XoMode" onchange="updateXo('ch2','mode',this.value)"><option value="off" selected>Off</option><option value="on">On</option></select></div>
+<div><label>Type</label><select id="ch2XoType" onchange="updateXo('ch2','type',this.value)"><option value="lr" selected>Linkwitz-Riley</option><option value="bw">Butterworth</option><option value="bs">Bessel</option></select></div>
+<div><label>Slope</label><select id="ch2XoSlope" onchange="updateXo('ch2','slope',this.value)"><option value="24" selected>24 dB</option><option value="12">12 dB</option><option value="18">18 dB</option><option value="36">36 dB</option><option value="48">48 dB</option></select></div>
+</div>
+<div class="bands">
+<div class="band">
+<span class="band-lbl low">Low</span>
+<div class="band-sliders">
+<div class="lbl"><span>Freq</span><span id="ch2LowFreqVal">80 Hz</span></div>
+<input type="range" min="20" max="500" value="80" id="ch2LowFreq" oninput="updateBandFreq('ch2','low',this.value)">
+<div class="lbl"><span>Gain</span><span id="ch2LowGainVal">0 dB</span></div>
+<input type="range" min="-15" max="15" value="0" step="0.1" id="ch2LowGain" oninput="updateBandGain('ch2','low',this.value)">
+</div>
+<div class="band-val" id="ch2LowGainDisp">0 dB</div>
+<div class="tgl on" id="ch2LowTgl" onclick="toggleBand(this,'ch2','low')"></div>
+</div>
+<div class="band">
+<span class="band-lbl mid">Mid</span>
+<div class="band-sliders">
+<div class="lbl"><span>Freq</span><span id="ch2MidFreqVal">800 Hz</span></div>
+<input type="range" min="200" max="5000" value="800" id="ch2MidFreq" oninput="updateBandFreq('ch2','mid',this.value)">
+<div class="lbl"><span>Gain</span><span id="ch2MidGainVal">0 dB</span></div>
+<input type="range" min="-15" max="15" value="0" step="0.1" id="ch2MidGain" oninput="updateBandGain('ch2','mid',this.value)">
+</div>
+<div class="band-val" id="ch2MidGainDisp">0 dB</div>
+<div class="tgl on" id="ch2MidTgl" onclick="toggleBand(this,'ch2','mid')"></div>
+</div>
+<div class="band">
+<span class="band-lbl high">High</span>
+<div class="band-sliders">
+<div class="lbl"><span>Freq</span><span id="ch2HighFreqVal">4000 Hz</span></div>
+<input type="range" min="1000" max="20000" value="4000" id="ch2HighFreq" oninput="updateBandFreq('ch2','high',this.value)">
+<div class="lbl"><span>Gain</span><span id="ch2HighGainVal">0 dB</span></div>
+<input type="range" min="-15" max="15" value="0" step="0.1" id="ch2HighGain" oninput="updateBandGain('ch2','high',this.value)">
+</div>
+<div class="band-val" id="ch2HighGainDisp">0 dB</div>
+<div class="tgl on" id="ch2HighTgl" onclick="toggleBand(this,'ch2','high')"></div>
+</div>
+</div>
+</div>
+<div class="sec">
+<div class="sec-head">
+<div class="sec-title">3. Parametric EQ</div>
+<div class="badge" id="eqCh2Badge">EQ: ON</div>
+</div>
+<div class="eq-bands">
+<div class="eq-band off" id="ch2Eq1Band">
+<div class="eq-head">
+<div class="eq-info"><span class="eq-num">1</span><span class="eq-name">Sub</span></div>
+<div style="display:flex;align-items:center;gap:8px">
+<span class="eq-freq" id="ch2Eq1Freq">40 Hz</span>
+<span class="eq-gain" id="ch2Eq1Gain">0 dB</span>
+<div class="eq-tgl" id="ch2Eq1Tgl" onclick="toggleEq(this,'ch2',1)"></div>
+</div>
+</div>
+<div class="eq-sliders">
+<div class="eq-row"><label>Freq</label><input type="range" min="20" max="200" value="40" id="ch2Eq1FreqIn" oninput="updateEq('ch2',1,'freq',this.value)"><span class="val" id="ch2Eq1FreqDisp">40 Hz</span></div>
+<div class="eq-row"><label>Gain</label><input type="range" min="-15" max="15" value="0" step="0.1" id="ch2Eq1GainIn" oninput="updateEq('ch2',1,'gain',this.value)"><span class="val" id="ch2Eq1GainDisp">0 dB</span></div>
+<div class="eq-row"><label>Q</label><input type="range" min="0.1" max="10" value="1" step="0.1" id="ch2Eq1QIn" oninput="updateEq('ch2',1,'q',this.value)"><span class="val" id="ch2Eq1QDisp">1.0</span></div>
+</div>
+</div>
+<div class="eq-band off" id="ch2Eq2Band">
+<div class="eq-head">
+<div class="eq-info"><span class="eq-num">2</span><span class="eq-name">L-Mid</span></div>
+<div style="display:flex;align-items:center;gap:8px">
+<span class="eq-freq" id="ch2Eq2Freq">170 Hz</span>
+<span class="eq-gain pos" id="ch2Eq2Gain">+0 dB</span>
+<div class="eq-tgl" id="ch2Eq2Tgl" onclick="toggleEq(this,'ch2',2)"></div>
+</div>
+</div>
+<div class="eq-sliders">
+<div class="eq-row"><label>Freq</label><input type="range" min="50" max="500" value="170" id="ch2Eq2FreqIn" oninput="updateEq('ch2',2,'freq',this.value)"><span class="val" id="ch2Eq2FreqDisp">170 Hz</span></div>
+<div class="eq-row"><label>Gain</label><input type="range" min="-15" max="15" value="0" step="0.1" id="ch2Eq2GainIn" oninput="updateEq('ch2',2,'gain',this.value)"><span class="val" id="ch2Eq2GainDisp">0 dB</span></div>
+<div class="eq-row"><label>Q</label><input type="range" min="0.1" max="10" value="1" step="0.1" id="ch2Eq2QIn" oninput="updateEq('ch2',2,'q',this.value)"><span class="val" id="ch2Eq2QDisp">1.0</span></div>
+</div>
+</div>
+<div class="eq-band on" id="ch2Eq3Band">
+<div class="eq-head">
+<div class="eq-info"><span class="eq-num">3</span><span class="eq-name">Mid</span></div>
+<div style="display:flex;align-items:center;gap:8px">
+<span class="eq-freq" id="ch2Eq3Freq">667 Hz</span>
+<span class="eq-gain" id="ch2Eq3Gain">0 dB</span>
+<div class="eq-tgl on" id="ch2Eq3Tgl" onclick="toggleEq(this,'ch2',3)"></div>
+</div>
+</div>
+<div class="eq-sliders">
+<div class="eq-row"><label>Freq</label><input type="range" min="200" max="2000" value="667" id="ch2Eq3FreqIn" oninput="updateEq('ch2',3,'freq',this.value)"><span class="val" id="ch2Eq3FreqDisp">667 Hz</span></div>
+<div class="eq-row"><label>Gain</label><input type="range" min="-15" max="15" value="0" step="0.1" id="ch2Eq3GainIn" oninput="updateEq('ch2',3,'gain',this.value)"><span class="val" id="ch2Eq3GainDisp">0 dB</span></div>
+<div class="eq-row"><label>Q</label><input type="range" min="0.1" max="10" value="1" step="0.1" id="ch2Eq3QIn" oninput="updateEq('ch2',3,'q',this.value)"><span class="val" id="ch2Eq3QDisp">1.0</span></div>
+</div>
+</div>
+<div class="eq-band on" id="ch2Eq4Band">
+<div class="eq-head">
+<div class="eq-info"><span class="eq-num">4</span><span class="eq-name">H-Mid</span></div>
+<div style="display:flex;align-items:center;gap:8px">
+<span class="eq-freq" id="ch2Eq4Freq">3382 Hz</span>
+<span class="eq-gain neg" id="ch2Eq4Gain">0 dB</span>
+<div class="eq-tgl on" id="ch2Eq4Tgl" onclick="toggleEq(this,'ch2',4)"></div>
+</div>
+</div>
+<div class="eq-sliders">
+<div class="eq-row"><label>Freq</label><input type="range" min="1000" max="8000" value="3382" id="ch2Eq4FreqIn" oninput="updateEq('ch2',4,'freq',this.value)"><span class="val" id="ch2Eq4FreqDisp">3382 Hz</span></div>
+<div class="eq-row"><label>Gain</label><input type="range" min="-15" max="15" value="0" step="0.1" id="ch2Eq4GainIn" oninput="updateEq('ch2',4,'gain',this.value)"><span class="val" id="ch2Eq4GainDisp">0 dB</span></div>
+<div class="eq-row"><label>Q</label><input type="range" min="0.1" max="10" value="1" step="0.1" id="ch2Eq4QIn" oninput="updateEq('ch2',4,'q',this.value)"><span class="val" id="ch2Eq4QDisp">1.0</span></div>
+</div>
+</div>
+<div class="eq-band on" id="ch2Eq5Band">
+<div class="eq-head">
+<div class="eq-info"><span class="eq-num">5</span><span class="eq-name">High</span></div>
+<div style="display:flex;align-items:center;gap:8px">
+<span class="eq-freq" id="ch2Eq5Freq">8000 Hz</span>
+<span class="eq-gain" id="ch2Eq5Gain">0 dB</span>
+<div class="eq-tgl on" id="ch2Eq5Tgl" onclick="toggleEq(this,'ch2',5)"></div>
+</div>
+</div>
+<div class="eq-sliders">
+<div class="eq-row"><label>Freq</label><input type="range" min="4000" max="20000" value="8000" id="ch2Eq5FreqIn" oninput="updateEq('ch2',5,'freq',this.value)"><span class="val" id="ch2Eq5FreqDisp">8000 Hz</span></div>
+<div class="eq-row"><label>Gain</label><input type="range" min="-15" max="15" value="0" step="0.1" id="ch2Eq5GainIn" oninput="updateEq('ch2',5,'gain',this.value)"><span class="val" id="ch2Eq5GainDisp">0 dB</span></div>
+<div class="eq-row"><label>Q</label><input type="range" min="0.1" max="10" value="1" step="0.1" id="ch2Eq5QIn" oninput="updateEq('ch2',5,'q',this.value)"><span class="val" id="ch2Eq5QDisp">1.0</span></div>
+</div>
+</div>
+</div>
+</div>
+<div class="sec">
+<div class="sec-head">
+<div class="sec-title">4. Limiter</div>
+<div class="badge off" id="limitCh2Badge">BYPASS</div>
+</div>
+<div class="lim-ctrl">
+<div class="lim-grp">
+<label>Threshold</label>
+<input type="range" min="-20" max="0" value="-3" step="0.1" id="ch2LimThreshIn" oninput="updateLimiter('ch2','threshold',this.value)">
+<span class="lim-val" id="ch2LimitThresh">-3 dB</span>
+</div>
+<div class="lim-grp">
+<label>Release</label>
+<input type="range" min="0.01" max="2" value="0.2" step="0.01" id="ch2LimRelIn" oninput="updateLimiter('ch2','release',this.value)">
+<span class="lim-val" id="ch2LimitRelease">0.2 s</span>
+</div>
+</div>
+</div>
+<div class="sec">
+<div class="sec-head"><div class="sec-title">Output</div></div>
+<div class="out">
+<div class="out-grp" style="grid-column:span 2">
+<label>Master Volume</label>
+<input type="range" min="-30" max="12" value="0" step="0.1" id="ch2MasterIn" oninput="updateMasterVol('ch2',this.value)">
+<span class="out-val" id="ch2MasterVol" style="color:#8b5cf6">0 dB</span>
+</div>
+<div class="out-grp">
+<label>Pan</label>
+<div class="select-wrap">
+<select id="ch2Pan" onchange="updatePan('ch2',this.value)">
+<option value="hardleft">Hard Left</option>
+<option value="left">Left</option>
+<option value="center">Center</option>
+<option value="right">Right</option>
+<option value="hardright" selected>Hard Right</option>
+</select>
+</div>
+</div>
+<div class="out-grp">
+<label>Delay</label>
+<input type="range" min="0" max="50" value="0" step="0.1" id="ch2DelayIn" oninput="updateDelay('ch2',this.value)">
+<span class="out-val" id="ch2Delay">0 ms</span>
+</div>
+<div class="out-grp" style="grid-column:span 2;display:flex;justify-content:flex-end">
+<button class="phase on" id="ch2Phase" onclick="togglePhase('ch2')">Phase 180°</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="footer">
+<p><span>Egaa DSP Studio</span> v4.0 — Fixed & Clean</p>
+</div>
+<script>
+// ===== FIXED AUDIO ENGINE =====
+var audioCtx=null,source=null,analyser=null,audioBuffer=null,isPlaying=false,currTime=0,startTime=0,playInt=null,pausedAt=0;
+var ch1Mute=false,ch2Mute=false,ch1Phase=false,ch2Phase=true;
+var presets={};
+
+// Master gains for L/R volume
+var volGainL=null,volGainR=null;
+// Channel processing nodes
+var ch1Nodes={},ch2Nodes={};
+
+var canvas=document.getElementById('spectrumCanvas');
+var ctx=canvas.getContext('2d');
+
+function resize(){var r=canvas.parentElement.getBoundingClientRect();canvas.width=r.width-24;canvas.height=r.height-24;}
+resize();window.addEventListener('resize',resize);
+
+function setStatus(text,active){
+  document.getElementById('statusText').textContent=text;
+  var d=document.getElementById('statusDot');
+  if(active){d.classList.add('active');}else{d.classList.remove('active');}
+}
+
+// ===== SPECTRUM DRAW =====
+function draw(){
+  var w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  // Grid lines
+  ctx.strokeStyle='rgba(31,41,55,0.5)';ctx.lineWidth=1;
+  for(var i=0;i<5;i++){var y=(h/4)*i;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+  var bc=64,bw=w/bc;
+  var data=null,hasClip=false;
+  if(analyser&&isPlaying){
+    data=new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(data);
+  }
+  for(var i=0;i<bc;i++){
+    var bh;
+    if(data&&i<data.length){
+      bh=(data[i]/255)*h*0.9;
+      if(data[i]>250)hasClip=true;
+    }else{
+      var t=Date.now()/1000;
+      var f=i/bc;
+      var n=Math.sin(t*2+i*0.3)*0.06+Math.sin(t*1.5+i*0.2)*0.04;
+      var e=Math.exp(-f*3)*0.12+0.015;
+      bh=Math.max(0,(n+e)*h*0.35);
+    }
+    var x=i*bw,y=h-bh;
+    var g=ctx.createLinearGradient(0,h,0,y);
+    g.addColorStop(0,'rgba(16,185,129,0.12)');
+    g.addColorStop(0.5,'rgba(16,185,129,0.3)');
+    g.addColorStop(1,'rgba(139,92,246,0.5)');
+    ctx.fillStyle=g;
+    var barW=bw-2;if(barW<1)barW=1;
+    ctx.fillRect(x+1,y,barW,bh);
+    if(bh>h*0.92){ctx.fillStyle='rgba(239,68,68,0.7)';ctx.fillRect(x+1,y,barW,2);}
+  }
+  var warn=document.getElementById('clipWarning');
+  if(hasClip)warn.classList.add('show');else warn.classList.remove('show');
+  requestAnimationFrame(draw);
+}
+draw();
+
+// ===== INIT AUDIO (simplified, robust) =====
+function initAudio(){
+  if(audioCtx)return;
+  try{
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+
+    // Volume L/R gains (these are the MAIN volume controls)
+    volGainL=audioCtx.createGain();
+    volGainR=audioCtx.createGain();
+    volGainL.gain.value=1; // 0 dB default
+    volGainR.gain.value=1;
+
+    // Analyser
+    analyser=audioCtx.createAnalyser();
+    analyser.fftSize=256;
+    analyser.smoothingTimeConstant=0.8;
+
+    // Channel splitter for stereo processing
+    var splitter=audioCtx.createChannelSplitter(2);
+    var merger=audioCtx.createChannelMerger(2);
+
+    // Build CH1 (Left) chain
+    ch1Nodes={};
+    ch1Nodes.eq=[];
+    for(var i=0;i<5;i++){
+      var f=audioCtx.createBiquadFilter();
+      f.type='peaking';
+      f.frequency.value=1000;
+      f.gain.value=0;
+      f.Q.value=1;
+      ch1Nodes.eq.push(f);
+    }
+    // Chain EQs
+    for(var i=0;i<ch1Nodes.eq.length-1;i++){
+      ch1Nodes.eq[i].connect(ch1Nodes.eq[i+1]);
+    }
+    ch1Nodes.limiter=audioCtx.createDynamicsCompressor();
+    ch1Nodes.limiter.threshold.value=0;
+    ch1Nodes.limiter.knee.value=0;
+    ch1Nodes.limiter.ratio.value=20;
+    ch1Nodes.limiter.attack.value=0.003;
+    ch1Nodes.limiter.release.value=0.2;
+    ch1Nodes.master=audioCtx.createGain();
+    ch1Nodes.master.gain.value=1;
+    ch1Nodes.panner=audioCtx.createStereoPanner();
+    ch1Nodes.panner.pan.value=-1;
+    ch1Nodes.phase=audioCtx.createGain();
+    ch1Nodes.phase.gain.value=1;
+
+    // Connect CH1: EQ chain -> limiter -> master -> panner -> phase -> volGainL -> merger
+    ch1Nodes.eq[ch1Nodes.eq.length-1].connect(ch1Nodes.limiter);
+    ch1Nodes.limiter.connect(ch1Nodes.master);
+    ch1Nodes.master.connect(ch1Nodes.panner);
+    ch1Nodes.panner.connect(ch1Nodes.phase);
+    ch1Nodes.phase.connect(volGainL);
+    volGainL.connect(merger,0,0);
+
+    // Build CH2 (Right) chain
+    ch2Nodes={};
+    ch2Nodes.eq=[];
+    for(var i=0;i<5;i++){
+      var f=audioCtx.createBiquadFilter();
+      f.type='peaking';
+      f.frequency.value=1000;
+      f.gain.value=0;
+      f.Q.value=1;
+      ch2Nodes.eq.push(f);
+    }
+    for(var i=0;i<ch2Nodes.eq.length-1;i++){
+      ch2Nodes.eq[i].connect(ch2Nodes.eq[i+1]);
+    }
+    ch2Nodes.limiter=audioCtx.createDynamicsCompressor();
+    ch2Nodes.limiter.threshold.value=-3;
+    ch2Nodes.limiter.knee.value=0;
+    ch2Nodes.limiter.ratio.value=20;
+    ch2Nodes.limiter.attack.value=0.003;
+    ch2Nodes.limiter.release.value=0.2;
+    ch2Nodes.master=audioCtx.createGain();
+    ch2Nodes.master.gain.value=1;
+    ch2Nodes.panner=audioCtx.createStereoPanner();
+    ch2Nodes.panner.pan.value=1;
+    ch2Nodes.phase=audioCtx.createGain();
+    ch2Nodes.phase.gain.value=-1; // inverted
+
+    // Connect CH2
+    ch2Nodes.eq[ch2Nodes.eq.length-1].connect(ch2Nodes.limiter);
+    ch2Nodes.limiter.connect(ch2Nodes.master);
+    ch2Nodes.master.connect(ch2Nodes.panner);
+    ch2Nodes.panner.connect(ch2Nodes.phase);
+    ch2Nodes.phase.connect(volGainR);
+    volGainR.connect(merger,0,1);
+
+    // Final output
+    merger.connect(analyser);
+    analyser.connect(audioCtx.destination);
+
+    setStatus('Audio Ready',true);
+  }catch(e){console.error('Audio init error:',e);alert('Audio init failed: '+e.message);}
+}
+
+function dbToGain(db){return Math.pow(10,db/20);}
+
+// ===== VOLUME L/R - FIXED =====
+function updateVol(ch,v){
+  var val=parseFloat(v);
+  document.getElementById('vol'+ch+'Val').textContent=val.toFixed(1)+' dB';
+  var p=((val+60)/72)*100;
+  document.getElementById('meter'+ch).style.width=Math.max(0,Math.min(100,p))+'%';
+  var clip=document.getElementById('clip'+ch);
+  if(val>=10){clip.classList.add('active');}else{clip.classList.remove('active');}
+  // APPLY TO ACTUAL AUDIO NODE
+  var gn=ch==='L'?volGainL:volGainR;
+  if(gn&&audioCtx){
+    gn.gain.setTargetAtTime(dbToGain(val),audioCtx.currentTime,0.01);
+  }
+}
+
+// ===== FILE UPLOAD - INSTANT PLAY =====
+document.getElementById('audioFile').addEventListener('change',function(e){
+  if(!e.target.files.length)return;
+  var file=e.target.files[0];
+  document.getElementById('fileName').textContent=file.name;
+  document.getElementById('fileLabel').classList.add('has-file');
+
+  var progress=document.getElementById('uploadProgress');
+  progress.style.width='20%';
+
+  initAudio();
+  if(audioCtx.state==='suspended')audioCtx.resume();
+
+  // Use createObjectURL for INSTANT playback (no waiting for decode!)
+  var fileURL=URL.createObjectURL(file);
+  var audioEl=new Audio();
+  audioEl.src=fileURL;
+  audioEl.crossOrigin='anonymous';
+
+  progress.style.width='50%';
+
+  audioEl.addEventListener('canplaythrough',function(){
+    progress.style.width='80%';
+    document.getElementById('totalTime').textContent=fmtTime(audioEl.duration);
+    document.getElementById('seekSlider').max=Math.floor(audioEl.duration);
+    document.getElementById('playBtn').disabled=false;
+
+    // Create media element source
+    if(source){try{source.disconnect();}catch(err){}}
+    source=audioCtx.createMediaElementSource(audioEl);
+
+    // Connect to BOTH channel chains
+    source.connect(ch1Nodes.eq[0]);
+    source.connect(ch2Nodes.eq[0]);
+
+    progress.style.width='100%';
+    setTimeout(function(){progress.style.width='0%';},400);
+
+    setStatus('Playing',true);
+
+    // AUTO PLAY - no delay!
+    audioEl.play().then(function(){
+      isPlaying=true;
+      document.getElementById('playBtn').innerHTML='⏸ Pause';
+      // Update time
+      playInt=setInterval(function(){
+        currTime=audioEl.currentTime;
+        document.getElementById('currentTime').textContent=fmtTime(currTime);
+        document.getElementById('seekSlider').value=Math.floor(currTime);
+        if(audioEl.ended){isPlaying=false;document.getElementById('playBtn').innerHTML='▶ Play';clearInterval(playInt);}
+      },200);
+    }).catch(function(err){console.log('Auto-play blocked:',err);});
+
+    // Store for controls
+    window._audioEl=audioEl;
+  });
+
+  audioEl.addEventListener('error',function(){alert('Error loading audio');progress.style.width='0%';});
+});
+
+function fmtTime(s){var m=Math.floor(s/60),sec=Math.floor(s%60);return m.toString().padStart(2,'0')+':'+sec.toString().padStart(2,'0');}
+
+// ===== PLAY/PAUSE =====
+function togglePlay(){
+  var b=document.getElementById('playBtn');
+  var el=window._audioEl;
+  if(!el)return;
+  if(isPlaying){
+    el.pause();
+    isPlaying=false;b.innerHTML='▶ Play';clearInterval(playInt);
+  }else{
+    if(audioCtx.state==='suspended')audioCtx.resume();
+    el.playbackRate=parseFloat(document.getElementById('speedSlider').value);
+    el.play();
+    isPlaying=true;b.innerHTML='⏸ Pause';
+    playInt=setInterval(function(){
+      currTime=el.currentTime;
+      document.getElementById('currentTime').textContent=fmtTime(currTime);
+      document.getElementById('seekSlider').value=Math.floor(currTime);
+      if(el.ended){isPlaying=false;b.innerHTML='▶ Play';clearInterval(playInt);}
+    },200);
+  }
+}
+
+function resetPlayer(){
+  var el=window._audioEl;
+  if(el){el.pause();el.currentTime=0;}
+  isPlaying=false;currTime=0;clearInterval(playInt);
+  document.getElementById('playBtn').innerHTML='▶ Play';
+  document.getElementById('currentTime').textContent='00:00';
+  document.getElementById('seekSlider').value=0;
+}
+
+function seekAudio(v){
+  var el=window._audioEl;
+  if(!el)return;
+  el.currentTime=parseFloat(v);
+  document.getElementById('currentTime').textContent=fmtTime(el.currentTime);
+}
+
+function updateSpeed(v){
+  var val=parseFloat(v);
+  document.getElementById('speedBadge').textContent=val.toFixed(2)+'x';
+  var el=window._audioEl;
+  if(el)el.playbackRate=val;
+}
+
+// ===== CONTROL FUNCTIONS =====
+function toggleMute(ch){
+  var btn=document.getElementById('mute'+ch);
+  btn.classList.toggle('on');
+  if(ch==='ch1')ch1Mute=!ch1Mute;else ch2Mute=!ch2Mute;
+  var nodes=ch==='ch1'?ch1Nodes:ch2Nodes;
+  if(nodes&&nodes.master){
+    var targetGain=ch==='ch1'?(ch1Mute?0:dbToGain(parseFloat(document.getElementById('ch1MasterIn').value))):(ch2Mute?0:dbToGain(parseFloat(document.getElementById('ch2MasterIn').value)));
+    nodes.master.gain.setTargetAtTime(targetGain,audioCtx.currentTime,0.01);
+  }
+}
+
+function toggleBand(el,ch,band){el.classList.toggle('on');}
+
+function toggleEq(el,ch,band){
+  el.classList.toggle('on');
+  var b=document.getElementById(ch+'Eq'+band+'Band');
+  b.classList.toggle('on');b.classList.toggle('off');
+  var nodes=ch==='ch1'?ch1Nodes:ch2Nodes;
+  if(nodes&&nodes.eq[band-1]){
+    var isOn=el.classList.contains('on');
+    var gainVal=isOn?parseFloat(document.getElementById(ch+'Eq'+band+'GainIn').value):0;
+    nodes.eq[band-1].gain.setTargetAtTime(gainVal,audioCtx.currentTime,0.01);
+  }
+}
+
+function updateRoute(ch,v){}
+
+function updateXo(ch,p,v){
+  var badge=document.getElementById('xo'+ch.charAt(0).toUpperCase()+ch.slice(1)+'Badge');
+  if(p==='mode'){badge.textContent=v==='on'?'ON':'Linkwitz-Riley';}
+  else if(p==='type'){badge.textContent=v==='lr'?'Linkwitz-Riley':v==='bw'?'Butterworth':'Bessel';}
+}
+
+function updateBandFreq(ch,band,v){
+  document.getElementById(ch+band.charAt(0).toUpperCase()+band.slice(1)+'FreqVal').textContent=v+' Hz';
+}
+
+function updateBandGain(ch,band,v){
+  var val=parseFloat(v);
+  var txt=(val>0?'+':'')+val.toFixed(1)+' dB';
+  document.getElementById(ch+band.charAt(0).toUpperCase()+band.slice(1)+'GainVal').textContent=txt;
+  document.getElementById(ch+band.charAt(0).toUpperCase()+band.slice(1)+'GainDisp').textContent=txt;
+}
+
+function updateEq(ch,band,param,v){
+  var s=param.charAt(0).toUpperCase()+param.slice(1);
+  var d=document.getElementById(ch+'Eq'+band+s+'Disp');
+  var m=document.getElementById(ch+'Eq'+band+s);
+  var nodes=ch==='ch1'?ch1Nodes:ch2Nodes;
+  var eqNode=nodes?nodes.eq[band-1]:null;
+  if(param==='freq'){
+    d.textContent=v+' Hz';
+    if(m)m.textContent=v+' Hz';
+    if(eqNode)eqNode.frequency.setTargetAtTime(parseFloat(v),audioCtx.currentTime,0.01);
+  }else if(param==='gain'){
+    var val=parseFloat(v);
+    d.textContent=(val>0?'+':'')+val.toFixed(1)+' dB';
+    if(m){m.textContent=(val>0?'+':'')+val.toFixed(1)+' dB';m.className='eq-gain '+(val>0?'pos':val<0?'neg':'');}
+    if(eqNode){
+      var tgl=document.getElementById(ch+'Eq'+band+'Tgl');
+      if(tgl&&tgl.classList.contains('on')){
+        eqNode.gain.setTargetAtTime(val,audioCtx.currentTime,0.01);
+      }
+    }
+  }else if(param==='q'){
+    d.textContent=parseFloat(v).toFixed(1);
+    if(eqNode)eqNode.Q.setTargetAtTime(parseFloat(v),audioCtx.currentTime,0.01);
+  }
+}
+
+function updateLimiter(ch,p,v){
+  var nodes=ch==='ch1'?ch1Nodes:ch2Nodes;
+  if(p==='threshold'){
+    document.getElementById(ch+'LimitThresh').textContent=parseFloat(v).toFixed(1)+' dB';
+    if(nodes&&nodes.limiter)nodes.limiter.threshold.setTargetAtTime(parseFloat(v),audioCtx.currentTime,0.01);
+  }else if(p==='release'){
+    document.getElementById(ch+'LimitRelease').textContent=parseFloat(v).toFixed(2)+' s';
+    if(nodes&&nodes.limiter)nodes.limiter.release.setTargetAtTime(parseFloat(v),audioCtx.currentTime,0.01);
+  }
+}
+
+function updateMasterVol(ch,v){
+  var val=parseFloat(v);
+  document.getElementById(ch+'MasterVol').textContent=val.toFixed(1)+' dB';
+  var nodes=ch==='ch1'?ch1Nodes:ch2Nodes;
+  if(nodes&&nodes.master){
+    var isMuted=ch==='ch1'?ch1Mute:ch2Mute;
+    if(!isMuted)nodes.master.gain.setTargetAtTime(dbToGain(val),audioCtx.currentTime,0.01);
+  }
+}
+
+function updatePan(ch,v){
+  var panVal={'hardleft':-1,'left':-0.5,'center':0,'right':0.5,'hardright':1}[v]||0;
+  var nodes=ch==='ch1'?ch1Nodes:ch2Nodes;
+  if(nodes&&nodes.panner)nodes.panner.pan.setTargetAtTime(panVal,audioCtx.currentTime,0.01);
+}
+
+function updateDelay(ch,v){
+  var val=parseFloat(v);
+  document.getElementById(ch+'Delay').textContent=val.toFixed(1)+' ms';
+}
+
+function togglePhase(ch){
+  var btn=document.getElementById(ch+'Phase');
+  btn.classList.toggle('on');
+  if(ch==='ch1')ch1Phase=!ch1Phase;else ch2Phase=!ch2Phase;
+  var nodes=ch==='ch1'?ch1Nodes:ch2Nodes;
+  if(nodes&&nodes.phase)nodes.phase.gain.setTargetAtTime((ch==='ch1'?ch1Phase:ch2Phase)?-1:1,audioCtx.currentTime,0.01);
+}
+
+// ===== PRESETS =====
+function loadPreset(){
+  var s=document.getElementById('presetSelect');
+  if(s.value==='— pilih preset —')return;
+  var name=s.value;
+  if(presets[name]){applyPreset(presets[name]);alert('Preset "'+name+'" dimuat!');}
+  else{alert('Preset "'+name+'" belum ada datanya. Simpan dulu!');}
+}
+
+function deletePreset(){
+  var s=document.getElementById('presetSelect');
+  if(s.value==='— pilih preset —')return;
+  if(confirm('Hapus preset "'+s.value+'"?')){delete presets[s.value];s.remove(s.selectedIndex);s.selectedIndex=0;}
+}
+
+function savePreset(){
+  var n=document.getElementById('newPresetName').value.trim();
+  if(!n)return;
+  if(presets[n]){if(!confirm('Preset "'+n+'" sudah ada. Timpa?'))return;}
+  presets[n]=capturePreset();
+  var s=document.getElementById('presetSelect'),found=false;
+  for(var i=0;i<s.options.length;i++){if(s.options[i].textContent===n){found=true;break;}}
+  if(!found){var o=document.createElement('option');o.textContent=n;s.appendChild(o);}
+  s.value=n;document.getElementById('newPresetName').value='';
+  alert('Preset "'+n+'" disimpan!');
+}
+
+function capturePreset(){
+  var p={};
+  for(var ch of['ch1','ch2']){
+    p[ch]={
+      route:document.getElementById(ch+'Route').value,
+      xoMode:document.getElementById(ch+'XoMode').value,
+      xoType:document.getElementById(ch+'XoType').value,
+      xoSlope:document.getElementById(ch+'XoSlope').value,
+      lowFreq:document.getElementById(ch+'LowFreq').value,
+      lowGain:document.getElementById(ch+'LowGain').value,
+      lowOn:document.getElementById(ch+'LowTgl').classList.contains('on'),
+      midFreq:document.getElementById(ch+'MidFreq').value,
+      midGain:document.getElementById(ch+'MidGain').value,
+      midOn:document.getElementById(ch+'MidTgl').classList.contains('on'),
+      highFreq:document.getElementById(ch+'HighFreq').value,
+      highGain:document.getElementById(ch+'HighGain').value,
+      highOn:document.getElementById(ch+'HighTgl').classList.contains('on'),
+      eq:{},master:document.getElementById(ch+'MasterIn').value,
+      pan:document.getElementById(ch+'Pan').value,
+      delay:document.getElementById(ch+'DelayIn').value,
+      phase:document.getElementById(ch+'Phase').classList.contains('on'),
+      limThresh:document.getElementById(ch+'LimThreshIn').value,
+      limRel:document.getElementById(ch+'LimRelIn').value
+    };
+    for(var b=1;b<=5;b++){
+      p[ch].eq[b]={
+        freq:document.getElementById(ch+'Eq'+b+'FreqIn').value,
+        gain:document.getElementById(ch+'Eq'+b+'GainIn').value,
+        q:document.getElementById(ch+'Eq'+b+'QIn').value,
+        on:document.getElementById(ch+'Eq'+b+'Tgl').classList.contains('on')
+      };
+    }
+  }
+  return p;
+}
+
+function applyPreset(p){
+  for(var ch in p){
+    if(!p.hasOwnProperty(ch))continue;
+    var d=p[ch];
+    document.getElementById(ch+'Route').value=d.route;
+    document.getElementById(ch+'XoMode').value=d.xoMode;
+    document.getElementById(ch+'XoType').value=d.xoType;
+    document.getElementById(ch+'XoSlope').value=d.xoSlope;
+    document.getElementById(ch+'LowFreq').value=d.lowFreq;
+    updateBandFreq(ch,'low',d.lowFreq);
+    document.getElementById(ch+'LowGain').value=d.lowGain;
+    updateBandGain(ch,'low',d.lowGain);
+    setTgl(document.getElementById(ch+'LowTgl'),d.lowOn);
+    document.getElementById(ch+'MidFreq').value=d.midFreq;
+    updateBandFreq(ch,'mid',d.midFreq);
+    document.getElementById(ch+'MidGain').value=d.midGain;
+    updateBandGain(ch,'mid',d.midGain);
+    setTgl(document.getElementById(ch+'MidTgl'),d.midOn);
+    document.getElementById(ch+'HighFreq').value=d.highFreq;
+    updateBandFreq(ch,'high',d.highFreq);
+    document.getElementById(ch+'HighGain').value=d.highGain;
+    updateBandGain(ch,'high',d.highGain);
+    setTgl(document.getElementById(ch+'HighTgl'),d.highOn);
+    for(var b in d.eq){
+      var e=d.eq[b];
+      document.getElementById(ch+'Eq'+b+'FreqIn').value=e.freq;
+      document.getElementById(ch+'Eq'+b+'GainIn').value=e.gain;
+      document.getElementById(ch+'Eq'+b+'QIn').value=e.q;
+      updateEq(ch,parseInt(b),'freq',e.freq);
+      updateEq(ch,parseInt(b),'gain',e.gain);
+      updateEq(ch,parseInt(b),'q',e.q);
+      setTgl(document.getElementById(ch+'Eq'+b+'Tgl'),e.on);
+      var bandEl=document.getElementById(ch+'Eq'+b+'Band');
+      if(e.on){bandEl.classList.add('on');bandEl.classList.remove('off');}
+      else{bandEl.classList.add('off');bandEl.classList.remove('on');}
+    }
+    document.getElementById(ch+'MasterIn').value=d.master;
+    updateMasterVol(ch,d.master);
+    document.getElementById(ch+'Pan').value=d.pan;
+    updatePan(ch,d.pan);
+    document.getElementById(ch+'DelayIn').value=d.delay;
+    updateDelay(ch,d.delay);
+    setTgl(document.getElementById(ch+'Phase'),d.phase);
+    document.getElementById(ch+'LimThreshIn').value=d.limThresh;
+    updateLimiter(ch,'threshold',d.limThresh);
+    document.getElementById(ch+'LimRelIn').value=d.limRel;
+    updateLimiter(ch,'release',d.limRel);
+  }
+}
+
+function setTgl(el,on){if(on)el.classList.add('on');else el.classList.remove('on');}
+
+// Init default values
+updateVol('L',0);
+updateVol('R',0);
+</script>
+</body>
+</html>
