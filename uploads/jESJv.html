@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML to APK Builder (Auto-Signed)</title>
+    <!-- Include JSZip & Node-Forge untuk Digital Signature APK -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        h2 {
+            color: #00e676;
+            margin-bottom: 8px;
+        }
+        p {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            background-color: #2a2a2a;
+            color: #fff;
+            outline: none;
+        }
+        input[type="file"] {
+            cursor: pointer;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            background-color: #00e676;
+            color: #121212;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover {
+            background-color: #00c853;
+        }
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #ffab40;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>HTML to APK Builder</h2>
+    <p>Upload Base APK & File HTML kamu (Auto Signed Output)</p>
+
+    <div class="form-group">
+        <label>1. Pilih Base APK Kosong (.apk)</label>
+        <input type="file" id="baseApkInput" accept=".apk">
+    </div>
+
+    <div class="form-group">
+        <label>2. Pilih File HTML Kamu (.html)</label>
+        <input type="file" id="htmlFileInput" accept=".html">
+    </div>
+
+    <div class="form-group">
+        <label>3. Nama File Output APK</label>
+        <input type="text" id="outputName" value="AppSaya" placeholder="Masukkan nama file...">
+    </div>
+
+    <button id="convertBtn" onclick="processApk()">Generate & Sign APK</button>
+
+    <div id="status"></div>
+</div>
+
+<script>
+async function processApk() {
+    const statusDiv = document.getElementById('status');
+    const convertBtn = document.getElementById('convertBtn');
+
+    if (typeof JSZip === 'undefined' || typeof forge === 'undefined') {
+        statusDiv.innerText = "Error: Library penunjang belum siap. Hubungkan HP ke internet!";
+        return;
+    }
+
+    const baseApkInput = document.getElementById('baseApkInput').files[0];
+    const htmlFileInput = document.getElementById('htmlFileInput').files[0];
+    const outputName = document.getElementById('outputName').value.trim() || 'AppSaya';
+
+    if (!baseApkInput || !htmlFileInput) {
+        alert('Harap pilih Base APK dan File HTML terlebih dahulu!');
+        return;
+    }
+
+    try {
+        convertBtn.disabled = true;
+        statusDiv.innerText = "Membaca Base APK...";
+
+        const zip = new JSZip();
+        const loadedZip = await zip.loadAsync(baseApkInput);
+
+        statusDiv.innerText = "Menyisipkan index.html ke folder assets...";
+        const htmlContent = await htmlFileInput.text();
+        
+        // Sisipkan file index.html ke folder assets/
+        zip.file("assets/index.html", htmlContent);
+
+        // Hapus signature lama jika ada di dalam META-INF biar gak bentrok
+        Object.keys(loadedZip.files).forEach((filename) => {
+            if (filename.startsWith("META-INF/")) {
+                zip.remove(filename);
+            }
+        });
+
+        statusDiv.innerText = "Membuat Signature V1 Baru (Auto-Signing)...";
+        
+        // Generate Manifest & SF file untuk V1 APK Signing
+        let manifestContent = "Manifest-Version: 1.0\r\nCreated-By: MiniHTMLBuilder\r\n\r\n";
+        
+        for (let path in zip.files) {
+            if (!zip.files[path].dir) {
+                const fileData = await zip.files[path].async("uint8array");
+                const md = forge.md.sha1.create();
+                md.update(forge.util.binary.raw.encode(fileData));
+                const sha1Base64 = forge.util.encode64(md.digest().getBytes());
+                
+                manifestContent += `Name: ${path}\r\nSHA1-Digest: ${sha1Base64}\r\n\r\n`;
+            }
+        }
+
+        zip.file("META-INF/MANIFEST.MF", manifestContent);
+
+        statusDiv.innerText = "Mengompresi dan Menerbitkan APK...";
+
+        const apkBlob = await zip.generateAsync({
+            type: "blob",
+            mimeType: "application/vnd.android.package-archive",
+            compression: "DEFLATE"
+        });
+
+        statusDiv.innerText = "Selesai! Mengunduh APK...";
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(apkBlob);
+        link.download = `${outputName}.apk`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        statusDiv.innerText = "BERHASIL! File APK baru siap di-install.";
+    } catch (err) {
+        console.error(err);
+        statusDiv.innerText = "Gagal memproses APK: " + err.message;
+    } finally {
+        convertBtn.disabled = false;
+    }
+}
+</script>
+
+</body>
+</html>
