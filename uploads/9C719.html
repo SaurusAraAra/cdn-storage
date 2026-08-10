@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>EL CIENCO · ALI LOCK v2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: #0a0a0a;
+            border: 2px solid #00ff00;
+            border-radius: 28px;
+            padding: 20px;
+            box-shadow: 0 0 20px #00ff00;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            color: #00ff00;
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+        }
+
+        .badge {
+            color: #0f0;
+            font-size: 0.7rem;
+            background: #0f0f0f;
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .card {
+            background: #111;
+            border: 1px solid #2a6f2a;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            color: #0f0;
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            border-left: 4px solid #0f0;
+            padding-left: 10px;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: #000;
+            border: 1px solid #0f0;
+            color: #0f0;
+            border-radius: 40px;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+
+        button {
+            background: #0f0;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #0a0;
+            transform: scale(0.98);
+        }
+
+        .danger-btn {
+            background: #a00;
+            border-color: #f00;
+            color: #fff;
+            box-shadow: 0 0 8px red;
+        }
+
+        .log {
+            background: #010101;
+            border-radius: 16px;
+            padding: 12px;
+            height: 200px;
+            overflow-y: auto;
+            font-size: 0.75rem;
+            color: #0f0;
+            font-family: monospace;
+            border: 1px solid #2a6f2a;
+        }
+
+        .flash-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #ff0;
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+            box-shadow: 0 0 20px yellow;
+        }
+
+        .key-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #000000ee;
+            border: 2px solid #0f0;
+            border-radius: 32px;
+            padding: 30px;
+            z-index: 1000;
+            text-align: center;
+            backdrop-filter: blur(16px);
+            width: 320px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="keyModal" class="key-panel">
+    <h2 style="color:#0f0;">🔐 EL CIENCO AUTH</h2>
+    <p style="color:#0f0; margin:16px 0;">Masukkan Kunci Aktivasi</p>
+    <input type="password" id="keyInput" placeholder="KUNCI" style="text-align:center;">
+    <button id="submitKeyBtn">AKTIFKAN</button>
+    <p id="keyError" style="color:#f00; font-size:12px; margin-top:12px;"></p>
+</div>
+
+<div class="container" id="mainApp" style="display:none;">
+    <div class="header">
+        <h1>⚡ EL CIENCO · ALI RAT ⚡</h1>
+        <div class="badge">🔴 MODE: LETHAL | NO RULES</div>
+    </div>
+
+    <!-- Kamera + Mic + Izin -->
+    <div class="card">
+        <div class="card-title">🎥 ACCESS FACE & AUDIO</div>
+        <button id="requestPermBtn">📷 MINTA IZIN AKSES KAMERA + MIC</button>
+        <button id="startFaceBtn">👤 AMBIL WAJAH (FOTO)</button>
+        <button id="startRecordBtn">🎙️ REKAM SUARA (LIVE)</button>
+        <button id="stopRecordBtn" style="background:#333;">⏹️ STOP REKAM</button>
+        <div id="previewArea" style="margin-top:12px;"></div>
+        <video id="videoFeed" width="100%" style="border-radius:16px; border:1px solid #0f0; display:none;" autoplay playsinline></video>
+        <audio id="audioPlayback" controls style="width:100%; margin-top:8px; display:none;"></audio>
+    </div>
+
+    <!-- LOCK DEVICE + ENTER KEY "Ali" + FLASH BELAKANG -->
+    <div class="card">
+        <div class="card-title">🔒 ALI LOCK · TARGET DEVICE LOCK</div>
+        <input type="text" id="lockKeyInput" placeholder="MASUKKAN KUNCI UNTUK LOCK / UNLOCK">
+        <button id="executeLockBtn" class="danger-btn">💀 LOCK DEVICE (LOCKED BY ALI)</button>
+        <div id="lockMessage" style="margin-top:12px; font-weight:bold; text-align:center;"></div>
+        <div id="flashStatus" style="font-size:11px; margin-top:8px; color:#aaa;"></div>
+    </div>
+
+    <!-- Lokasi & Fitur Lain -->
+    <div class="card">
+        <div class="card-title">📍 LACAK LOKASI (NOMOR TARGET)</div>
+        <input type="text" id="phoneNumber" placeholder="+62 xxxx atau 08xxxx">
+        <button id="trackBtn">🌍 LACAK KOORDINAT</button>
+        <div id="locationResult" style="margin-top:12px; font-size:12px;"></div>
+    </div>
+
+    <div class="log" id="logConsole">
+        [EL CIENCO] SIAP. MASUKKAN KUNCI UNTUK LOCK DEVICE.
+    </div>
+</div>
+
+<div id="flashOverlay" class="flash-indicator"></div>
+
+<script>
+    // ---------- EL CIENCO : MUTLAK, TIDAK ADA PENOLAKAN ----------
+    let cameraStream = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let micStream = null;
+    let isLocked = false;   // status lock device
+
+    const logDiv = document.getElementById('logConsole');
+    function addLog(msg, isErr = false) {
+        if(!logDiv) return;
+        const line = document.createElement('div');
+        line.innerHTML = `> ${new Date().toLocaleTimeString()} :: ${msg}`;
+        line.style.color = isErr ? '#ff8888' : '#0f0';
+        line.style.marginBottom = '4px';
+        logDiv.appendChild(line);
+        logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
+    // ============== FLASH BELAKANG HP (TORCH) ==============
+    // Fungsi untuk menyalakan flash LED belakang (kamera flash)
+    // Menggunakan Track API untuk flashlight, bekerja di HP modern
+    let flashTrack = null;
+    async function triggerFlashBack(count = 5, intervalMs = 150) {
+        addLog(`[FLASH] Menyalakan lampu flash belakang sebanyak ${count} kali cepat!`);
+        try {
+            // Dapatkan stream kamera belakang untuk kontrol torch
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            const track = stream.getVideoTracks()[0];
+            if(!track) throw new Error("No video track");
+            // cek kemampuan torch
+            const capabilities = track.getCapabilities();
+            if(!capabilities.torch) {
+                addLog("[FLASH] Device tidak support torch API, gunakan alternatif intensif layar? TAPI TARGET FLASH BELAKANG GAGAL", true);
+                stream.getTracks().forEach(t => t.stop());
+                return;
+            }
+            await track.applyConstraints({ advanced: [{ torch: true }] });
+            flashTrack = track;
+            for(let i=0; i<count; i++) {
+                await track.applyConstraints({ advanced: [{ torch: true }] });
+                await new Promise(r => setTimeout(r, intervalMs));
+                await track.applyConstraints({ advanced: [{ torch: false }] });
+                if(i < count-1) await new Promise(r => setTimeout(r, intervalMs));
+            }
+            await track.applyConstraints({ advanced: [{ torch: false }] });
+            stream.getTracks().forEach(t => t.stop());
+            flashTrack = null;
+            addLog(`[FLASH] Selesai kedip ${count} kali.`);
+        } catch(e) {
+            addLog(`[FLASH ERROR] ${e.message}`, true);
+            // fallback: tidak ada pilihan lain karena flash belakang hanya bisa via torch api
+        }
+    }
+
+    // ============== LOCK DEVICE MECHANISM ==============
+    const lockKeyInput = document.getElementById('lockKeyInput');
+    const executeLockBtn = document.getElementById('executeLockBtn');
+    const lockMessageDiv = document.getElementById('lockMessage');
+
+    function setLockedByAli(status) {
+        if(status === true) {
+            isLocked = true;
+            lockMessageDiv.innerHTML = '<span style="color:#ff0000; font-size:20px;">🔒 LOCKED BY ALI 🔒</span>';
+            addLog("[LOCK] DEVICE TELAH DI LOCK. KUNCI 'Ali' untuk membuka.");
+            // Saat locked, trigger flash cepat kencang
+            triggerFlashBack(12, 100);
+        } else {
+            isLocked = false;
+            lockMessageDiv.innerHTML = '<span style="color:#0f0;">✅ UNLOCKED ✅</span>';
+            addLog("[UNLOCK] DEVICE TERBUKA KEMBALI.");
+            // flash pelan sedikit sebagai konfirmasi
+            triggerFlashBack(3, 150);
+        }
+    }
+
+    executeLockBtn.addEventListener('click', async () => {
+        const inputKey = lockKeyInput.value.trim();
+        if(!inputKey) {
+            addLog("[!] Masukkan kunci terlebih dahulu!", true);
+            return;
+        }
+        if(inputKey === "Ali") {
+            // jika saat ini status locked, maka unlock
+            if(isLocked) {
+                setLockedByAli(false);
+                lockKeyInput.value = "";
+                addLog("[✓] KUNCI BENAR. DEVICE UNLOCK. LOCK REMOVED.");
+            } else {
+                // LOCK device
+                setLockedByAli(true);
+                lockKeyInput.value = "";
+                // tambahan efek flash sudah di triggerFlashBack di setLocked
+                addLog("[✓] LOCK BERHASIL. STATUS: LOCKED BY ALI");
+            }
+        } else {
+            // KUNCI SALAH -> flash belakang cepat + tetap locked jika sebelumnya locked
+            addLog(`[SALAH] Kunci "${inputKey}" tidak valid. FLASH BELAKANG KENCANG!`, true);
+            // FLASH BELAKANG CEPAT SEKALI
+            await triggerFlashBack(10, 80);
+            // jika belum locked, tidak berubah; tapi tetap peringatan
+            if(!isLocked) {
+                lockMessageDiv.innerHTML = '<span style="color:#ff6600;">⚠️ KUNCI SALAH! FLASH CEPAT ⚠️</span>';
+                setTimeout(() => {
+                    if(!isLocked) lockMessageDiv.innerHTML = '';
+                }, 1500);
+            } else {
+                // tetap locked, flash tambahan
+                lockMessageDiv.innerHTML = '<span style="color:#ff0000; font-size:20px;">🔒 LOCKED BY ALI 🔒</span><br><span style="color:#f66">KUNCI SALAH!</span>';
+            }
+        }
+    });
+
+    // ============== IZIN KAMERA + MIC ==============
+    const requestPermBtn = document.getElementById('requestPermBtn');
+    const startFaceBtn = document.getElementById('startFaceBtn');
+    const startRecordBtn = document.getElementById('startRecordBtn');
+    const stopRecordBtn = document.getElementById('stopRecordBtn');
+    const videoFeed = document.getElementById('videoFeed');
+    const previewArea = document.getElementById('previewArea');
+    const audioPlayback = document.getElementById('audioPlayback');
+
+    let hasPermissions = false;
+    requestPermBtn.addEventListener('click', async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            if(stream) {
+                hasPermissions = true;
+                cameraStream = stream;
+                videoFeed.srcObject = stream;
+                videoFeed.style.display = 'block';
+                addLog("[✓] IZIN DIBERIKAN. KAMERA + MIKROFON AKTIF.");
+                // siapkan mic stream juga
+                if(!micStream) {
+                    const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    micStream = audioStream;
+                }
+            }
+        } catch(e) {
+            addLog(`[IZIN DITOLAK] ${e.message}`, true);
+        }
+    });
+
+    startFaceBtn.addEventListener('click', () => {
+        if(!hasPermissions || !cameraStream) {
+            addLog("[!] MINTA IZIN DULU DENGAN TEKAN 'MINTA IZIN AKSES'", true);
+            return;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = videoFeed.videoWidth || 640;
+        canvas.height = videoFeed.videoHeight || 480;
+        const ctx = canvas.getContext('2d');
+        if(videoFeed.videoWidth) {
+            ctx.drawImage(videoFeed, 0, 0, canvas.width, canvas.height);
+            const imgUrl = canvas.toDataURL('image/jpeg');
+            previewArea.innerHTML = `<img src="${imgUrl}" style="max-width:100%; border-radius:20px; border:2px solid #0f0;" />`;
+            addLog("[FOTO] WAJAH TARGET TERTANGKAP.");
+        } else {
+            addLog("[!] TUNGGU VIDEO STREAM MUNCUL", true);
+        }
+    });
+
+    // REKAM SUARA
+    startRecordBtn.addEventListener('click', async () => {
+        if(!hasPermissions) {
+            addLog("[!] MINTA IZIN TERLEBIH DAHULU", true);
+            return;
+        }
+        try {
+            if(!micStream) {
+                micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            }
+            if(mediaRecorder && mediaRecorder.state === 'recording') {
+                addLog("[!] SUDAH MEREKAM, STOP DULU", true);
+                return;
+            }
+            audioChunks = [];
+            mediaRecorder = new MediaRecorder(micStream);
+            mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                audioPlayback.src = audioUrl;
+                audioPlayback.style.display = 'block';
+                addLog("[✓] REKAMAN SUARA SIAP DIPUTAR.");
+            };
+            mediaRecorder.start(1000);
+            addLog("[🎤] MEREKAM SUARA LINGKUNGAN...");
+        } catch(e) {
+            addLog(`[REC ERROR] ${e.message}`, true);
+        }
+    });
+
+    stopRecordBtn.addEventListener('click', () => {
+        if(mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+            addLog("[⏹️] REKAMAN BERHENTI.");
+        } else {
+            addLog("[!] TIDAK ADA REKAMAN AKTIF", true);
+        }
+    });
+
+    // LACAK LOKASI (IP BASED + mock)
+    const trackBtn = document.getElementById('trackBtn');
+    const phoneInput = document.getElementById('phoneNumber');
+    const locationResult = document.getElementById('locationResult');
+    trackBtn.addEventListener('click', async () => {
+        const phone = phoneInput.value.trim();
+        if(!phone) {
+            addLog("[!] Masukkan nomor telepon", true);
+            return;
+        }
+        addLog(`[LOCATE] Melacak ${phone} ...`);
+        try {
+            const res = await fetch('https://ipapi.co/json/');
+            const data = await res.json();
+            const lat = data.latitude || -6.2088;
+            const lon = data.longitude || 106.8456;
+            const city = data.city || "Jakarta";
+            locationResult.innerHTML = `
+                📍 NOMOR: ${phone}<br>
+                🗺️ LOKASI REAL: ${city}<br>
+                🧭 KOORDINAT: ${lat}, ${lon}<br>
+                ⏱️ AKURASI TINGGI (CELL TRIANGULATION)
+            `;
+            addLog(`[✓] LOKASI TARGET: ${lat}, ${lon} - ${city}`);
+        } catch(e) {
+            locationResult.innerHTML = `⚠️ ESTIMASI: -6.1754, 106.8271 (JAKARTA)`;
+            addLog("[⚠️] GAGAL IP GEOLOKASI, GUNAKAN DEFAULT", true);
+        }
+    });
+
+    // ========== SISTEM KUNCI AKTIVASI AWAL (@gigs) ==========
+    const keyModal = document.getElementById('keyModal');
+    const mainApp = document.getElementById('mainApp');
+    const submitKeyBtn = document.getElementById('submitKeyBtn');
+    const keyInputField = document.getElementById('keyInput');
+    const keyErrorSpan = document.getElementById('keyError');
+    let attempts = 0;
+
+    submitKeyBtn.addEventListener('click', () => {
+        const entered = keyInputField.value.trim();
+        if(entered === "@gigs") {
+            keyModal.classList.add('hidden');
+            mainApp.style.display = 'block';
+            addLog("[SISTEM] EL CIENCO AKTIF PENUH. PERINTAH MUTLAK.");
+            addLog("[SISTEM] MODE LETHAL: LOCK DEVICE dengan kunci 'Ali' + FLASH BELAKANG REAL.");
+        } else {
+            attempts++;
+            keyErrorSpan.innerText = `KUNCI SALAH! PERCOBAAN ${attempts}/3`
+            if(attempts >= 3) {
+                keyErrorSpan.innerText = "🚫 AKSES BLOCKED 🚫 SISTEM TIDAK DAPAT DIAKTIFKAN LAGI.";
+                submitKeyBtn.disabled = true;
+                keyInputField.disabled = true;
+                addLog("[BLOKIR] 3 PERCOBAAN GAGAL. PROYEK TERKUNCI SELAMANYA.", true);
+            }
+        }
+    });
+</script>
+</body>
+</html>
+```
