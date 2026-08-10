@@ -1,0 +1,81 @@
+PROMPT NOVASKY TOOLS
+
+Buatkan website tools premium bernama NOVASKY TOOLS.
+
+Tema: - Black & White - Modern - Elegan - Mewah - Glassmorphism -
+Responsive - Vanilla HTML CSS JavaScript
+
+Struktur Project: - index.html - style.css - script.js - config.js
+
+Semua CSS di style.css. Semua JavaScript di script.js. Semua endpoint
+API di config.js.
+
+Header: - Logo: NOVASKY TOOLS - Subtitle: Modern Utility Dashboard -
+Search - Notification - Menu - Sticky blur navbar.
+
+Hero: - Judul: NOVASKY TOOLS - Subjudul: All In One Downloader, AI,
+Generator & Utility - Tombol Explore Tools - Tombol AI Chat - Banner
+menggunakan URL agar mudah diganti.
+
+Dashboard: Grid card modern dengan hover, glow, rounded, glassmorphism.
+
+Kategori: Downloader, AI, Canvas, Image, Information, Islamic, Hosting,
+Utilities.
+
+Tools: Instagram Downloader TikTok Downloader YouTube Downloader
+Pinterest Downloader AIO Downloader BRAT Generator Fake FF Lobby Fake
+Instagram Story IQC Generator Quotes Maker Tanya Ustadz Certificate
+Generator QR Generator Remove Background Image Enhancer Website To ZIP
+Cek Tagihan PLN Jadwal Bola Jadwal Sholat Fake Developer Fix Error Image
+To Prompt Niat Sholat Web Phishing Checker Create Hosting Server
+
+Setiap tool membuka modal sesuai kebutuhan.
+
+AI Chat: UI seperti ChatGPT. Tema putih. Sidebar. Riwayat chat. Input
+bawah. Upload gambar. New Chat. Clear Chat. Tidak menggunakan API AI.
+
+Popup awal: Username Upload foto Personality Masuk Dashboard Gunakan
+LocalStorage.
+
+Footer: © 2026 NOVASKY TOOLS
+
+Konfigurasi API:
+
+const API = { instagram:“https://api.nexray.eu.cc/downloader/instagram”,
+tiktok:“https://api.nexray.eu.cc/downloader/tiktok”,
+youtube:“https://api.nexray.eu.cc/downloader/ytmp4”,
+pinterest:“https://api-faa.my.id/faa/pin-down”,
+aio:“https://api-faa.my.id/faa/aio”,
+brat:“https://api.nexray.eu.cc/maker/brat”,
+fakeFF:“https://api.nexray.eu.cc/maker/fakelobyff”,
+fakeIG:“https://api.nexray.eu.cc/maker/fakestory”,
+iqc:“https://api.nexray.eu.cc/maker/v1/iqc”,
+quotes1:“https://apii.nexadev.my.id/wmp1?text=”,
+quotes2:“https://apii.nexadev.my.id/wmp2?text=”,
+ustadz:“https://api-nanzz.my.id/docs/api/maker/tanyaustadz.php”,
+certificate:“https://api.siputzx.my.id/api/canvas/sertifikat-tolol”,
+qr:“https://quickchart.io/qr”,
+removebg:“https://api-nanzz.my.id/docs/api/tools/image/removebg.php”,
+enhancer:“https://api-nanzz.my.id/docs/api/tools/image/enhancer.php”,
+webToZip:“https://api.nexray.eu.cc/tools/webtozip”,
+cekTagihanPLN:“https://api.nexray.eu.cc/information/cektagihanpln”,
+jadwalBola:“https://api.nexray.eu.cc/information/jadwalbola”,
+jadwalSholat:“https://api.nexray.eu.cc/information/jadwalsholat”,
+imgbbUpload:“https://api.imgbb.com/1/upload”,
+imgbbKey:“78ea8ffd6689a519186fbfe959dce735”,
+webPhishing:“https://api.nexray.eu.cc/tools/webphishing”,
+fakedev:“https://api.ikyyxd.my.id/canvas/fakedev?image=&nama=&bio=”,
+fixerror:“https://api.ikyyxd.my.id/tools/fixerror?code=”,
+niatsholat:“https://api.ikyyxd.my.id/islamic/niatsholat?sholat=”,
+img2prompt:“https://api.ikyyxd.my.id/tools/img2prompt?url=”,
+createServer:“https://api.nexadev.my.id/crateserver/?key=&namaserver=&usn=&gmail=&password=&c=&r=&d=”
+};
+
+Semua request menggunakan object API. Tidak boleh hardcode URL di file
+lain.
+
+Gunakan object modular: const App={} const UI={} const Storage={} const
+Downloader={} const Generator={}
+
+Kode harus rapi, reusable, responsive, banyak komentar, tanpa Bootstrap
+maupun Tailwind.
